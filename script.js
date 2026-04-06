@@ -21,6 +21,9 @@ const fortuneWork = document.getElementById("fortuneWork");
 const fortuneMoney = document.getElementById("fortuneMoney");
 const fortuneHealth = document.getElementById("fortuneHealth");
 const fortuneKeyword = document.getElementById("fortuneKeyword");
+const todayPanel = document.getElementById("todayPanel");
+const todayLockTitle = document.getElementById("todayLockTitle");
+const todayLockMessage = document.getElementById("todayLockMessage");
 
 const omikujiResults = [
   {
@@ -197,6 +200,48 @@ const renderDailyFortune = () => {
   fortuneKeyword.textContent = randomFrom(dailyPools.keyword, seed + 17);
 };
 
+const lockTodayFortune = () => {
+  if (!todayPanel) {
+    return;
+  }
+
+  todayPanel.classList.add("is-locked");
+  todayPanel.classList.remove("is-unlocked");
+  if (todayLockTitle) {
+    todayLockTitle.textContent = "まずはおみくじを引いてください。";
+  }
+  if (todayLockMessage) {
+    todayLockMessage.textContent = "今日の運勢はまだ封印中です。先におみくじを引くと、その結果をヒントに今日の流れが解放されます。";
+  }
+};
+
+const unlockTodayFortune = (result, options = {}) => {
+  const { animate = true } = options;
+  if (!todayPanel) {
+    return;
+  }
+
+  if (todayLockTitle) {
+    todayLockTitle.textContent = `${result.rank}を受信。今日の運勢を解放します。`;
+  }
+  if (todayLockMessage) {
+    todayLockMessage.textContent = result.rank === "凶"
+      ? "慎重モードで読み解く一日です。守りの運勢も、見方を変えれば立派な武器になります。"
+      : `${result.rank}の流れをもとに、今日の5つの運勢を展開します。気になる項目から眺めてください。`;
+  }
+
+  if (!animate || prefersReducedMotion.matches) {
+    todayPanel.classList.remove("is-locked");
+    todayPanel.classList.add("is-unlocked");
+    return;
+  }
+
+  window.setTimeout(() => {
+    todayPanel.classList.remove("is-locked");
+    todayPanel.classList.add("is-unlocked");
+  }, 460);
+};
+
 const clearFortuneRankClasses = () => {
   const rankClasses = [
     "rank-daikichi",
@@ -304,11 +349,13 @@ const restoreTodayOmikuji = () => {
       drawButton.disabled = false;
       drawButton.textContent = "おみくじを引く";
     }
+    lockTodayFortune();
     return;
   }
 
   setFortuneVisual(savedResult);
   fortuneShell.classList.add("is-revealed");
+  unlockTodayFortune(savedResult, { animate: false });
   if (drawButton) {
     drawButton.disabled = true;
     drawButton.textContent = "今日は引き済みです";
@@ -329,6 +376,7 @@ if (drawButton) {
 
     saveTodayOmikuji(result);
     runFortuneAnimation(result);
+    unlockTodayFortune(result);
   });
 }
 

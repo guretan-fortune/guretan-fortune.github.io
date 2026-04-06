@@ -143,7 +143,14 @@
         </p>
       </div>
 
-      <div class="today-panel panel" data-reveal>
+      <div class="today-panel panel is-locked" id="todayPanel" data-reveal>
+        <div class="today-lock" id="todayLock" aria-live="polite">
+          <p class="mini-label">Locked Fortune</p>
+          <h3 id="todayLockTitle">まずはおみくじを引いてください。</h3>
+          <p id="todayLockMessage">
+            今日の運勢はまだ封印中です。先におみくじを引くと、その結果をヒントに今日の流れが解放されます。
+          </p>
+        </div>
         <div class="today-main">
           <p class="mini-label" id="todayDateLabel">TODAY SIGNAL</p>
           <h3 id="todayHeadline">今日の運勢を計算中です。</h3>
