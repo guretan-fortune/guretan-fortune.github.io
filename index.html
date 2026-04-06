@@ -3,247 +3,304 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="遊べる個人サイト。おみくじと今日の運勢を中心に、訪れるたびに気分が少し上向く体験型ホームページ。">
-  <title>Fortune Playground</title>
+  <meta name="description" content="運命を育て、運勢カードを集め、7日ごとに世界が変化する個人用ホームページ。Webアートとミニゲームの中間を目指した体験型サイト。">
+  <title>運命育成サイト | Little Fate Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="noise" aria-hidden="true"></div>
-  <div class="cursor-aura" aria-hidden="true"></div>
+<body data-stage="1" data-element="moon">
+  <div class="backdrop" aria-hidden="true">
+    <div class="nebula nebula-a"></div>
+    <div class="nebula nebula-b"></div>
+    <div class="starfield" id="starfield"></div>
+    <div class="moon-glow"></div>
+    <div class="cursor-light"></div>
+    <div class="world-silhouette">
+      <span class="tower tower-a"></span>
+      <span class="tower tower-b"></span>
+      <span class="tower tower-c"></span>
+      <span class="bridge"></span>
+      <span class="guide"></span>
+      <span class="secret-door"></span>
+    </div>
+  </div>
 
   <header class="topbar" id="top">
     <a class="brand" href="#hero">
-      <span class="brand-badge">遊</span>
-      <span class="brand-text">
-        <strong>Fortune Playground</strong>
-        <span>playful personal homepage</span>
+      <span class="brand-mark">LF</span>
+      <span class="brand-copy">
+        <strong>Little Fate Archive</strong>
+        <span>personal world / collectible destiny</span>
       </span>
     </a>
     <nav class="nav" aria-label="主要ナビゲーション">
-      <a href="#omikuji">おみくじ</a>
-      <a href="#today">今日の運勢</a>
+      <a href="#today">今日の運命</a>
+      <a href="#cards">運勢カード</a>
+      <a href="#growth">育成状況</a>
+      <a href="#world">世界の変化</a>
       <a href="#about">このサイト</a>
-      <a href="#contact">連絡先</a>
     </nav>
   </header>
 
   <main>
     <section class="hero section" id="hero">
       <div class="hero-copy" data-reveal>
-        <p class="eyebrow">Touch / Scroll / Play</p>
+        <p class="eyebrow">Destiny Growth / Card Collect / 7 Days World Shift</p>
         <h1>
-          今日は少し、<br>
-          遊ぶように運をひらく。
+          運命を育てる、<br>
+          小さな世界へ。
         </h1>
         <p class="lead">
-          ここはプロフィールを読むだけの場所ではなく、触れるたびに空気が変わる個人サイトです。
-          おみくじを引いて、今日の運勢を受け取り、ちょっとだけ気分のいい未来へ進めます。
+          ここは、毎日ひとつの選択を重ねることで、あなた自身の運命キャラクターが育ち、
+          収集した運勢カードとともに世界が変化していく個人用ホームページです。
+          占いサイトでも、ゲームでも、ポートフォリオでもあり、そのどれにも収まらない場所を目指しました。
         </p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#omikuji">おみくじを引く</a>
-          <a class="button button-secondary" href="#today">今日の運勢を見る</a>
+          <a class="button button-primary" href="#today">今日の運命を始める</a>
+          <a class="button button-secondary" href="#cards">カード図鑑を見る</a>
         </div>
       </div>
 
-      <div class="hero-stage" data-depth="0.14" aria-hidden="true">
-        <div class="float-card ticket-card">
-          <p class="mini-label">Today</p>
-          <p class="big-copy">LUCK</p>
-          <p class="small-copy">Tap the page. Let it glow.</p>
-        </div>
-        <div class="float-card capsule-card">
-          <span class="capsule capsule-a"></span>
-          <span class="capsule capsule-b"></span>
-          <span class="capsule capsule-c"></span>
-        </div>
-        <div class="float-card orbit-card">
-          <span class="orbit"></span>
-          <span class="orbit orbit-delayed"></span>
-          <p>FORTUNE SIGNAL</p>
-        </div>
+      <div class="hero-panels" data-depth="0.12" aria-hidden="true">
+        <article class="glass panel-ticket">
+          <p class="mini-label">World Phase</p>
+          <p class="panel-value" id="heroWorldPhase">phase 01</p>
+          <p class="panel-note" id="heroWorldNote">静かな夜空だけが広がる、始まりの世界。</p>
+        </article>
+        <article class="glass panel-orbit">
+          <span class="orbit orbit-a"></span>
+          <span class="orbit orbit-b"></span>
+          <p>fate / memory / light</p>
+        </article>
+        <article class="glass panel-character">
+          <p class="mini-label">Current Title</p>
+          <p class="panel-character-title" id="heroTitle">月影の案内人</p>
+          <p class="panel-note" id="heroElement">属性: 月</p>
+        </article>
       </div>
     </section>
 
-    <section class="fortune-zones section" id="omikuji">
+    <section class="today section" id="today">
       <div class="section-heading" data-reveal>
-        <p class="eyebrow">Omikuji</p>
-        <h2>おみくじを引く</h2>
+        <p class="eyebrow">Today</p>
+        <h2>今日の運命</h2>
         <p>
-          ボタンを押すたびに、運勢・一言・ラッキーアイテム・行動ヒントが切り替わります。
-          ほんの少し大げさなくらいが、今日はちょうどいいかもしれません。
+          一日一度だけ、運命の選択ができます。選んだ行動は属性や性質、称号、獲得カード、
+          そしてこの世界の表情そのものに影響します。
         </p>
       </div>
 
-      <div class="fortune-layout">
-        <article class="fortune-machine panel" data-reveal>
-          <div class="machine-head">
-            <p class="machine-title">Omikuji Machine</p>
-            <p class="machine-sub">運の波形を読み込み中</p>
-          </div>
-
-          <div class="fortune-stage" id="fortuneStage">
-            <div class="fortune-burst" aria-hidden="true"></div>
-            <div class="fortune-shell" id="fortuneShell">
-              <span class="shell-core">御</span>
+      <div class="today-layout">
+        <article class="glass ritual-panel" data-reveal>
+          <div class="ritual-head">
+            <div>
+              <p class="mini-label">Daily Ritual</p>
+              <h3 id="dailyStatusTitle">今日の選択はまだです。</h3>
             </div>
+            <p class="ritual-date" id="todayDate"></p>
           </div>
 
-          <button class="draw-button" id="drawOmikuji" type="button" aria-describedby="fortuneResult">
-            おみくじを引く
-          </button>
+          <div class="fortune-sigil" id="fortuneSigil" aria-hidden="true">
+            <span class="sigil-ring ring-a"></span>
+            <span class="sigil-ring ring-b"></span>
+            <span class="sigil-core" id="sigilCore">未</span>
+          </div>
 
-          <div class="fortune-result" id="fortuneResult" aria-live="polite">
-            <p class="result-rank">準備OK</p>
-            <h3>気分が乗ったら、引いてみてください。</h3>
-            <p class="result-message">
-              今日はどんな運が出ても、演出込みで楽しむのが正解です。
+          <div class="choice-intro" id="choiceIntro">
+            <p>
+              今夜のあなたは、どの光を選びますか。
+              どの選択も正解ですが、育つ運命の輪郭は少しずつ変わっていきます。
             </p>
-            <dl class="result-meta">
-              <div>
-                <dt>ラッキーアイテム</dt>
-                <dd>まだ秘密</dd>
-              </div>
-              <div>
-                <dt>おすすめアクション</dt>
-                <dd>深呼吸してスタート</dd>
-              </div>
-            </dl>
+          </div>
+
+          <div class="choice-grid" id="choiceGrid" aria-live="polite"></div>
+
+          <div class="daily-result glass-sub" id="dailyResult" aria-live="polite">
+            <p class="result-label" id="dailyResultLabel">Awaiting</p>
+            <h3 id="dailyResultTitle">今日の運命は、選択のあとに立ち上がります。</h3>
+            <p id="dailyResultText">
+              一度選んだ運命は、日付が変わるまで保存されます。静かな気持ちで一つ選んでみてください。
+            </p>
+            <div class="daily-impact" id="dailyImpact"></div>
           </div>
         </article>
 
-        <aside class="fortune-side" data-reveal>
-          <div class="mini-panel panel">
-            <p class="mini-label">How To Enjoy</p>
-            <ul class="tips-list">
-              <li>朝に1回引く</li>
-              <li>気分転換でもう1回引く</li>
-              <li>結果を友人に共有して遊ぶ</li>
+        <aside class="glass today-side" data-reveal>
+          <div class="side-block">
+            <p class="mini-label">Visit Flow</p>
+            <ul class="side-list">
+              <li>1日1回、運命を選ぶ</li>
+              <li>運勢カードを獲得する</li>
+              <li>属性と性質が育つ</li>
+              <li>7日連続で世界が変化する</li>
             </ul>
           </div>
-          <div class="mini-panel panel accent-panel">
-            <p class="mini-label">Mood</p>
-            <p class="accent-copy">
-              「占い」というより、今日は少し楽しく動き出すためのきっかけ。
+          <div class="side-block">
+            <p class="mini-label">Hidden Hint</p>
+            <p id="hiddenHint">
+              連続訪問が続くほど、光の深いカードが出やすくなります。
             </p>
           </div>
         </aside>
       </div>
     </section>
 
-    <section class="today-zone section" id="today">
+    <section class="cards section" id="cards">
       <div class="section-heading" data-reveal>
-        <p class="eyebrow">Today's Fortune</p>
-        <h2>今日の運勢</h2>
+        <p class="eyebrow">Destiny Card</p>
+        <h2>運勢カード収集</h2>
         <p>
-          日付に応じて、その日の気分を彩るデイリー運勢を表示します。
-          眺めるだけでも楽しいように、5つの項目をまとめてカード化しました。
+          毎日の選択のあとに、世界から一枚のカードが届きます。未取得カードは影のまま残り、
+          集めるほど図鑑の景色が豊かになっていきます。
         </p>
       </div>
 
-      <div class="today-panel panel is-locked" id="todayPanel" data-reveal>
-        <div class="today-lock" id="todayLock" aria-live="polite">
-          <p class="mini-label">Locked Fortune</p>
-          <h3 id="todayLockTitle">まずはおみくじを引いてください。</h3>
-          <p id="todayLockMessage">
-            今日の運勢はまだ封印中です。先におみくじを引くと、その結果をヒントに今日の流れが解放されます。
-          </p>
-        </div>
-        <div class="today-main">
-          <p class="mini-label" id="todayDateLabel">TODAY SIGNAL</p>
-          <h3 id="todayHeadline">今日の運勢を計算中です。</h3>
-          <p id="todaySummary">
-            少しだけお待ちください。今日の空気感を言葉に変換しています。
-          </p>
-        </div>
+      <div class="card-reward-layout">
+        <article class="glass reward-panel" data-reveal>
+          <div class="reward-head">
+            <p class="mini-label">Today's Card</p>
+            <p class="reward-status" id="cardRewardStatus">未獲得</p>
+          </div>
+          <div class="reward-stage" id="rewardStage">
+            <div class="reward-halo"></div>
+            <article class="reward-card card-shell is-empty" id="rewardCard">
+              <p class="card-rarity" id="rewardCardRarity">FATE</p>
+              <h3 id="rewardCardName">まだカードは届いていません</h3>
+              <p class="card-attribute" id="rewardCardAttribute">属性: 未定</p>
+              <p class="card-description" id="rewardCardDescription">
+                今日の運命を選ぶと、その結果に応じた一枚がここに記録されます。
+              </p>
+            </article>
+          </div>
+        </article>
 
-        <div class="today-grid">
-          <article class="today-card" data-tone="love">
-            <p>恋愛運</p>
-            <strong id="fortuneLove">-</strong>
-          </article>
-          <article class="today-card" data-tone="work">
-            <p>仕事運</p>
-            <strong id="fortuneWork">-</strong>
-          </article>
-          <article class="today-card" data-tone="money">
-            <p>金運</p>
-            <strong id="fortuneMoney">-</strong>
-          </article>
-          <article class="today-card" data-tone="health">
-            <p>健康運</p>
-            <strong id="fortuneHealth">-</strong>
-          </article>
-          <article class="today-card wide" data-tone="keyword">
-            <p>今日のキーワード</p>
-            <strong id="fortuneKeyword">-</strong>
-          </article>
-        </div>
+        <article class="glass collection-panel" data-reveal>
+          <div class="collection-head">
+            <div>
+              <p class="mini-label">Collection</p>
+              <h3 id="collectionRate">0 / 30</h3>
+            </div>
+            <p class="collection-sub" id="collectionPercent">0%</p>
+          </div>
+          <div class="collection-grid" id="collectionGrid"></div>
+        </article>
       </div>
     </section>
 
-    <section class="about-zone section" id="about">
+    <section class="growth section" id="growth">
       <div class="section-heading" data-reveal>
-        <p class="eyebrow">About This Site</p>
-        <h2>このサイトについて</h2>
+        <p class="eyebrow">Growth</p>
+        <h2>育成状況</h2>
+        <p>
+          あなたの運命キャラクターは、訪問と選択を通じて少しずつ性格を持ち始めます。
+          属性、性質、称号の変化はすべて保存され、次の日に引き継がれます。
+        </p>
       </div>
 
-      <div class="about-grid">
-        <article class="panel about-card" data-reveal>
-          <p class="mini-label">Concept</p>
-          <h3>プロフィールを遊び場に変える。</h3>
-          <p>
-            作品や肩書きを整然と並べるよりも、この人の空気感や発想が伝わることを優先した個人サイトです。
-            少し笑えて、少し気分が上がって、気づけば記憶に残る。そんな温度を目指しています。
-          </p>
+      <div class="growth-layout">
+        <article class="glass status-panel" data-reveal>
+          <div class="status-hero">
+            <p class="mini-label">Destiny Character</p>
+            <h3 id="statusTitle">月影の案内人</h3>
+            <p id="statusElement">属性: 月</p>
+          </div>
+
+          <dl class="status-grid">
+            <div>
+              <dt>累計訪問日数</dt>
+              <dd id="totalVisits">0日</dd>
+            </div>
+            <div>
+              <dt>連続訪問日数</dt>
+              <dd id="visitStreak">0日</dd>
+            </div>
+            <div>
+              <dt>世界段階</dt>
+              <dd id="worldStageLabel">第1段階</dd>
+            </div>
+            <div>
+              <dt>周回数</dt>
+              <dd id="worldCycleLabel">0周</dd>
+            </div>
+          </dl>
+
+          <div class="traits" id="traitMeters"></div>
         </article>
 
-        <article class="panel about-card" data-reveal>
-          <p class="mini-label">What I Do</p>
-          <h3>つくること、試すこと、驚かせること。</h3>
-          <p>
-            ここには本来、自己紹介、活動内容、制作領域、リンク集などを入れられます。
-            今は仮文ですが、後から自分の肩書きや制作テーマに自然に置き換えられる構造にしてあります。
-          </p>
-        </article>
-
-        <article class="panel about-card" data-reveal>
-          <p class="mini-label">Sections</p>
-          <h3>遊びと情報が、ちゃんと両立する設計。</h3>
-          <p>
-            おみくじと今日の運勢を入口にしつつ、下層では個人サイトとして必要な情報も拾えるように整理しています。
-            ただ楽しいだけで終わらず、公開用のホームページとして使える形です。
-          </p>
+        <article class="glass achievement-panel" data-reveal>
+          <p class="mini-label">Milestones</p>
+          <div class="achievement-list" id="achievementList"></div>
         </article>
       </div>
     </section>
 
-    <section class="contact-zone section" id="contact">
-      <div class="contact-panel panel" data-reveal>
-        <div class="contact-copy">
-          <p class="eyebrow">Contact</p>
-          <h2>連絡先</h2>
-          <p>
-            気軽な感想、制作相談、コラボの話まで歓迎です。
-            公開時はここを実際のメールやSNSに差し替えて使ってください。
+    <section class="world section" id="world">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">World Shift</p>
+        <h2>世界の変化</h2>
+        <p>
+          このサイトの背景世界は、連続訪問日数に応じて7段階で育ちます。星が増え、月が濃くなり、
+          建物や案内役、秘密の扉が姿を現し、7日目には祝福が開きます。
+        </p>
+      </div>
+
+      <div class="world-layout">
+        <article class="glass world-panel" data-reveal>
+          <p class="mini-label">Current World</p>
+          <h3 id="worldName">第一夜: 星待ちの庭</h3>
+          <p id="worldDescription">
+            まだ静かな空だけが広がっています。けれど、夜は確かに育ちはじめています。
           </p>
-        </div>
-        <div class="contact-links">
-          <a href="mailto:hello@example.com">hello@example.com</a>
-          <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="https://x.com/" target="_blank" rel="noreferrer">X / Social</a>
-        </div>
+          <div class="world-progress">
+            <div class="world-track">
+              <span class="world-progress-bar" id="worldProgressBar"></span>
+            </div>
+            <p id="worldNextHint">次の変化まであと1日。</p>
+          </div>
+        </article>
+
+        <article class="glass stage-list-panel" data-reveal>
+          <p class="mini-label">Stages</p>
+          <div class="stage-list" id="stageList"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="about section" id="about">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">About</p>
+        <h2>この世界の主について</h2>
+      </div>
+
+      <div class="about-layout">
+        <article class="glass about-card" data-reveal>
+          <p class="mini-label">Profile</p>
+          <h3>現実の制作と、夜の世界づくりを横断する個人サイト。</h3>
+          <p>
+            このページは、自己紹介をただ並べる代わりに、自分の制作姿勢そのものを世界観として置くために作りました。
+            企画、UI、フロントエンド、インタラクション設計を横断しながら、触れた人の記憶に残る体験を目指しています。
+          </p>
+        </article>
+        <article class="glass about-card" data-reveal>
+          <p class="mini-label">Site Intent</p>
+          <h3>ポートフォリオであり、小さな継続体験でもある。</h3>
+          <p>
+            訪問者が毎日少しずつ変化を見つけ、カードを集め、気づけばこのサイトに感情を持つ。
+            そんな関係性を目指して、個人ホームページの形をゲーム寄りに変形させています。
+          </p>
+        </article>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Fortune Playground</p>
+    <p>Little Fate Archive</p>
     <a href="#top">ページ上部へ戻る</a>
   </footer>
 
+  <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

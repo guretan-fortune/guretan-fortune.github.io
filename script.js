@@ -1,371 +1,553 @@
+const STORAGE_KEY = "little-fate-archive-state";
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const starfield = document.getElementById("starfield");
+const choiceGrid = document.getElementById("choiceGrid");
+const dailyStatusTitle = document.getElementById("dailyStatusTitle");
+const todayDate = document.getElementById("todayDate");
+const sigilCore = document.getElementById("sigilCore");
+const dailyResultLabel = document.getElementById("dailyResultLabel");
+const dailyResultTitle = document.getElementById("dailyResultTitle");
+const dailyResultText = document.getElementById("dailyResultText");
+const dailyImpact = document.getElementById("dailyImpact");
+const hiddenHint = document.getElementById("hiddenHint");
+
+const heroWorldPhase = document.getElementById("heroWorldPhase");
+const heroWorldNote = document.getElementById("heroWorldNote");
+const heroTitle = document.getElementById("heroTitle");
+const heroElement = document.getElementById("heroElement");
+
+const rewardCard = document.getElementById("rewardCard");
+const rewardCardRarity = document.getElementById("rewardCardRarity");
+const rewardCardName = document.getElementById("rewardCardName");
+const rewardCardAttribute = document.getElementById("rewardCardAttribute");
+const rewardCardDescription = document.getElementById("rewardCardDescription");
+const cardRewardStatus = document.getElementById("cardRewardStatus");
+const collectionGrid = document.getElementById("collectionGrid");
+const collectionRate = document.getElementById("collectionRate");
+const collectionPercent = document.getElementById("collectionPercent");
+
+const statusTitle = document.getElementById("statusTitle");
+const statusElement = document.getElementById("statusElement");
+const totalVisits = document.getElementById("totalVisits");
+const visitStreak = document.getElementById("visitStreak");
+const worldStageLabel = document.getElementById("worldStageLabel");
+const worldCycleLabel = document.getElementById("worldCycleLabel");
+const traitMeters = document.getElementById("traitMeters");
+const achievementList = document.getElementById("achievementList");
+
+const worldName = document.getElementById("worldName");
+const worldDescription = document.getElementById("worldDescription");
+const worldProgressBar = document.getElementById("worldProgressBar");
+const worldNextHint = document.getElementById("worldNextHint");
+const stageList = document.getElementById("stageList");
+
 const revealTargets = document.querySelectorAll("[data-reveal]");
 const parallaxTargets = document.querySelectorAll("[data-depth]");
-const cursorAura = document.querySelector(".cursor-aura");
 
-const drawButton = document.getElementById("drawOmikuji");
-const fortuneStage = document.getElementById("fortuneStage");
-const fortuneShell = document.getElementById("fortuneShell");
-const resultRank = document.querySelector(".result-rank");
-const resultHeading = document.querySelector(".fortune-result h3");
-const resultMessage = document.querySelector(".result-message");
-const resultItem = document.querySelector(".result-meta div:first-child dd");
-const resultAction = document.querySelector(".result-meta div:last-child dd");
-const machineSub = document.querySelector(".machine-sub");
+const diffDays = (from, to) => {
+  const start = new Date(`${from}T00:00:00`);
+  const end = new Date(`${to}T00:00:00`);
+  return Math.round((end - start) / 86400000);
+};
 
-const todayDateLabel = document.getElementById("todayDateLabel");
-const todayHeadline = document.getElementById("todayHeadline");
-const todaySummary = document.getElementById("todaySummary");
-const fortuneLove = document.getElementById("fortuneLove");
-const fortuneWork = document.getElementById("fortuneWork");
-const fortuneMoney = document.getElementById("fortuneMoney");
-const fortuneHealth = document.getElementById("fortuneHealth");
-const fortuneKeyword = document.getElementById("fortuneKeyword");
-const todayPanel = document.getElementById("todayPanel");
-const todayLockTitle = document.getElementById("todayLockTitle");
-const todayLockMessage = document.getElementById("todayLockMessage");
+const formatDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-const omikujiResults = [
-  {
-    id: "daikichi",
-    rank: "大吉",
-    title: "今日は勢いのある当たり日です。",
-    message: "遠慮していると運が先に行きます。少し大胆なくらいの一歩が、空気を一気に変えてくれそうです。",
-    item: "つやのあるイヤホン",
-    action: "気になっていた連絡を一つ返す",
-    tone: "linear-gradient(135deg, #ff4f93, #ffbf40)",
-    symbol: "大",
-  },
-  {
-    id: "chukichi",
-    rank: "中吉",
-    title: "素直さが、そのまま追い風になります。",
-    message: "派手な展開ではなくても、丁寧に選んだ行動が良い結果へつながります。今日は整える日です。",
-    item: "お気に入りのノート",
-    action: "机の上を3分だけ整える",
-    tone: "linear-gradient(135deg, #59b8ff, #4dcaa8)",
-    symbol: "中",
-  },
-  {
-    id: "shokichi",
-    rank: "小吉",
-    title: "静かなラッキーが潜んでいます。",
-    message: "目立つ幸運ではなくても、小さな納得感が何度か訪れそうです。焦らず拾うと満足度が上がります。",
-    item: "白いマグカップ",
-    action: "ひとつ予定に余白を残す",
-    tone: "linear-gradient(135deg, #785bff, #59b8ff)",
-    symbol: "小",
-  },
-  {
-    id: "kichi",
-    rank: "吉",
-    title: "肩の力を抜いた方がうまくいきます。",
-    message: "今日は完璧主義より、軽やかな着手が正解です。まず始めるだけで十分流れが変わります。",
-    item: "軽いスニーカー",
-    action: "5分だけ散歩する",
-    tone: "linear-gradient(135deg, #ff8a3d, #ffbf40)",
-    symbol: "吉",
-  },
-  {
-    id: "suekichi",
-    rank: "末吉",
-    title: "後半に向けてじわじわ上向く日です。",
-    message: "朝のペースが鈍くても問題ありません。午後から突然リズムが合ってくる気配があります。",
-    item: "オレンジ色の小物",
-    action: "昼以降に本命タスクを置く",
-    tone: "linear-gradient(135deg, #ffbf40, #ff8a3d)",
-    symbol: "末",
-  },
-  {
-    id: "kyo",
-    rank: "凶",
-    title: "今日は無理に勝ちにいかない方が賢い日です。",
-    message: "運勢が低めの日は、雑に使うと減りやすいだけです。守りを固めるとむしろ明日が強くなります。",
-    item: "温かい飲み物",
-    action: "重要な判断はひと呼吸置く",
-    tone: "linear-gradient(135deg, #43355f, #785bff)",
-    symbol: "凶",
-  },
-];
+const todayKey = formatDateKey(new Date());
 
-const VISITOR_KEY = "fortune-playground-visitor-id";
-const OMIKUJI_KEY = "fortune-playground-omikuji";
+const defaultState = () => ({
+  visitorId: `fate-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+  totalVisits: 0,
+  visitStreak: 0,
+  lastVisitDate: null,
+  worldCycle: 0,
+  elementAffinity: {
+    light: 0,
+    moon: 1,
+    star: 0,
+    wind: 0,
+    dream: 0,
+    silence: 0,
+    spark: 0,
+  },
+  traits: {
+    kindness: 1,
+    courage: 1,
+    intuition: 1,
+    focus: 1,
+    harmony: 1,
+    curiosity: 1,
+  },
+  cardsOwned: [],
+  dailyAction: null,
+});
 
-const dailyPools = {
-  headline: [
-    "今日は、まだ見えていない運の輪郭が少しずつ立ち上がる日です。",
-    "おみくじの結果を手がかりに、今日の流れを丁寧に読み解いてみてください。",
-    "運勢は固定された答えではなく、今日のあなたに合うヒントとして現れます。",
-    "小さな選択が一日の空気を変える。そんな前提で運勢を受け取ると面白い日です。",
-    "派手な奇跡より、静かな追い風を見つけやすい一日になりそうです。",
-  ],
-  summary: [
-    "最短距離を狙うより、気分のいい選択を重ねた方が結果的に前へ進めます。",
-    "今日は真面目さに、少しだけ軽さを混ぜると魅力が増します。",
-    "頑張るより整える。そんな温度感がちょうど噛み合います。",
-    "ひらめきは突然来るので、余白を少しだけ確保しておくのがおすすめです。",
-    "人と比べるより、自分のテンポを守る方が運が安定します。",
-  ],
-  love: [
-    "心が自然に通じ合う日",
-    "優しいひと言が距離を縮める",
-    "思いがけない嬉しい接点あり",
-    "素直さが魅力になる",
-    "焦らず待つほど良い流れに",
-    "さりげない気配りが好印象",
-    "笑顔が恋を引き寄せる",
-    "小さな会話にチャンスが宿る",
-    "相手の良さを再発見できる",
-    "いつもより甘い空気が流れる",
-    "誠実な態度が恋を育てる",
-    "一歩踏み出す勇気が実る",
-    "懐かしい縁が動き出す",
-    "連絡のタイミングに恵まれる",
-    "想像以上に好反応を得られる",
-    "自分らしさがいちばんの武器",
-    "優しさが恋の追い風になる",
-    "ふとした偶然が恋のきっかけに",
-    "期待しすぎない姿勢が吉",
-    "安心感が愛情を深める",
-    "新しい出会いに胸が高鳴る",
-    "会えない時間が想いを強くする",
-    "駆け引きより素直さが勝つ",
-    "相手を尊重する姿勢が鍵",
-    "温かな会話が心をほどく",
-    "恋の迷いが晴れていく",
-    "一緒に笑う時間が増える",
-    "ふんわりした魅力が輝く",
-    "小さな親切が大きな進展に",
-    "恋愛面で意外な収穫あり",
-    "目と目が合う瞬間に意味がある",
-    "さみしさが愛しさに変わる",
-    "ゆっくり進む恋ほど本物",
-    "思い切った一言が流れを変える",
-    "心の整理が恋の好転を呼ぶ",
-    "自然体のあなたに惹かれる人あり",
-    "何気ない共有が絆になる",
-    "優先順位を見直すと恋運上昇",
-    "想いを言葉にするほど伝わる",
-    "ぬくもりを感じやすい日",
-    "再会が恋の予感を運ぶ",
-    "相手の本音に気づける",
-    "愛される準備が整う日",
-    "ときめきが日常に紛れ込む",
-    "恋のヒントは身近な場所にある",
-    "落ち着いた関係が育ちやすい",
-    "信頼が恋を前進させる",
-    "心の壁が少しずつ薄くなる",
-    "やわらかな雰囲気が好感度アップ",
-    "恋に追い風が吹く一日",
-  ],
-  work: [
-    "集中力が冴えて成果が出る",
-    "地道な努力が評価される",
-    "周囲との連携がスムーズ",
-    "段取りの良さが光る",
-    "新しい発想が活かされる",
-    "丁寧さが信頼につながる",
-    "小さな成功が大きな自信に",
-    "相談ごとに良い答えが見つかる",
-    "苦手分野にも前向きに向き合える",
-    "報連相が運を開く",
-    "目の前の仕事に福あり",
-    "タイミングよく助けが入る",
-    "判断力が冴える日",
-    "柔軟な対応が高評価に",
-    "コツコツ積み上げた力が実る",
-    "新しい役割に縁がある",
-    "誠実な姿勢が武器になる",
-    "ひと工夫で大きく改善",
-    "先回りの行動が吉",
-    "頼られる場面が増える",
-    "意外なチャンスが巡ってくる",
-    "話し合いが良い方向に進む",
-    "迷ったら基本に戻ると正解",
-    "仕事の流れを整えやすい",
-    "周囲の期待に応えられる",
-    "新しい学びが今後に活きる",
-    "努力が目に見える形になる",
-    "慎重さがミスを防ぐ",
-    "人脈が仕事運を押し上げる",
-    "整理整頓で効率アップ",
-    "交渉ごとに追い風あり",
-    "発言が良い影響を与える",
-    "忍耐が結果につながる",
-    "責任感が評価される",
-    "やるべきことが明確になる",
-    "一歩引いて見ると道が開ける",
-    "得意分野で存在感を発揮",
-    "継続の力を実感できる",
-    "無理なく進めることが成功の鍵",
-    "サポート役として活躍できる",
-    "新しい視点が突破口になる",
-    "課題解決の糸口が見える",
-    "説明力が高まる日",
-    "周囲との温度感が合いやすい",
-    "落ち着いた対応が信頼を呼ぶ",
-    "仕上げの丁寧さで差がつく",
-    "責任ある仕事が成長を促す",
-    "前向きな姿勢が評価を集める",
-    "小さな改善が大きな成果に",
-    "仕事運は安定上昇中",
-  ],
-  money: [
-    "無駄遣いを防げる日",
-    "小さな得が積み重なる",
-    "計画的なお金の使い方が吉",
-    "節約意識が冴える",
-    "思わぬお得情報に出会う",
-    "堅実さが金運アップの鍵",
-    "必要なものにだけ使うと吉",
-    "買い物は比較すると成功",
-    "財布の整理で運気上昇",
-    "小さな貯蓄が未来を助ける",
-    "見直しで家計が整う",
-    "衝動買いに注意すると安定",
-    "得するタイミングを見極められる",
-    "予算管理がうまくいく",
-    "貯める喜びを感じられる",
-    "堅実な選択が正解になる",
-    "使い道を考えるほど運が育つ",
-    "お金に感謝すると巡りが良くなる",
-    "先を見据えた判断が吉",
-    "出費のバランスが整いやすい",
-    "思いがけない節約チャンスあり",
-    "必要経費は惜しまないのが吉",
-    "安物買いより納得重視が正解",
-    "貯金計画を立てるのに良い日",
-    "金運は守り重視で安定",
-    "賢い選択が未来の余裕を作る",
-    "欲しい物は一晩考えて吉",
-    "情報収集がお金を守る",
-    "支払い管理がスムーズ",
-    "気前の良さはほどほどが吉",
-    "ポイントや特典を活かせる",
-    "手持ちの見直しで安心感アップ",
-    "家計の改善点が見つかる",
-    "大きな買い物は慎重に",
-    "節度ある楽しみ方が金運を守る",
-    "収支の流れが読みやすい日",
-    "貯める力が高まる",
-    "必要な投資は前向きに",
-    "使うより整えるが吉",
-    "細かな管理が実を結ぶ",
-    "金運は堅実さに味方する",
-    "欲張らない姿勢が安定を呼ぶ",
-    "小銭にも福が宿る日",
-    "見栄の出費を抑えると好調",
-    "価値ある使い方ができる",
-    "将来のための準備が進む",
-    "費用対効果を意識すると吉",
-    "お金の流れを整えやすい",
-    "地に足のついた判断が光る",
-    "着実に豊かさを育てられる日",
-  ],
-  health: [
-    "無理をしなければ快調",
-    "休息が運気回復の鍵",
-    "体を温めると調子が上がる",
-    "睡眠を大切にしたい日",
-    "深呼吸が心身を整える",
-    "軽い運動が良い刺激になる",
-    "水分補給を意識して吉",
-    "食生活を整えると安定",
-    "心の余裕が体調にも好影響",
-    "今日は早めの休憩が大切",
-    "姿勢を意識すると疲れにくい",
-    "自分をいたわるほど元気が出る",
-    "小さな不調を見逃さないで",
-    "リラックス時間が運気を上げる",
-    "ぬるめのお風呂でリフレッシュ",
-    "動きすぎず休みすぎずが吉",
-    "生活リズムを整えやすい日",
-    "心の疲れをケアすると好調",
-    "無理な我慢は禁物",
-    "朝の過ごし方が一日を左右する",
-    "体の声に耳を傾けたい日",
-    "バランスの良い食事が味方",
-    "やさしいペースで過ごすと吉",
-    "目や肩の疲れに注意",
-    "気分転換が健康運アップにつながる",
-    "今日は質の良い休息が最優先",
-    "体をほぐすと流れが良くなる",
-    "冷え対策で快適に過ごせる",
-    "頑張りすぎないことが健康法",
-    "心を軽くすると体も軽くなる",
-    "穏やかに過ごすほど整う",
-    "軽い散歩が気分転換に最適",
-    "食べすぎ飲みすぎに注意",
-    "こまめなストレッチが吉",
-    "疲れたらすぐ休む判断が大切",
-    "ゆったりした音楽が癒やしに",
-    "早寝早起きが効果的",
-    "体調管理の意識が高まる日",
-    "心身のメンテナンスに最適",
-    "体をいたわる行動が福を呼ぶ",
-    "今日は癒やしを優先して吉",
-    "やさしい食事で整いやすい",
-    "緊張をほどくと楽になる",
-    "マイペースを守るほど好調",
-    "ほんの少しの運動で十分効果あり",
-    "体のサインを見逃さないで",
-    "気持ちの安定が健康運を支える",
-    "穏やかな習慣が力になる",
-    "こまめな休憩が明日を助ける",
-    "健康運は回復基調",
-  ],
-  keyword: [
-    "ひらめき",
-    "ご縁",
-    "やさしさ",
-    "直感",
-    "整える",
-    "一歩前進",
-    "素直",
-    "余白",
-    "挑戦",
-    "安心感",
-    "笑顔",
-    "再発見",
-    "調和",
-    "勇気",
-    "ぬくもり",
-    "好奇心",
-    "深呼吸",
-    "光",
-    "リセット",
-    "感謝",
-    "会話",
-    "ときめき",
-    "集中",
-    "信頼",
-    "めぐりあい",
-    "リラックス",
-    "成長",
-    "変化",
-    "柔軟さ",
-    "きらめき",
-    "誠実",
-    "小さな幸せ",
-    "前向き",
-    "自然体",
-    "温存",
-    "決断",
-    "休息",
-    "清潔感",
-    "チャンス",
-    "積み重ね",
-    "ひと休み",
-    "追い風",
-    "閃光",
-    "包容力",
-    "福音",
-    "回復",
-    "彩り",
-    "静けさ",
-    "飛躍",
-    "願い",
-  ],
+const loadState = () => {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return defaultState();
+    }
+
+    const parsed = JSON.parse(raw);
+    return {
+      ...defaultState(),
+      ...parsed,
+      elementAffinity: { ...defaultState().elementAffinity, ...parsed.elementAffinity },
+      traits: { ...defaultState().traits, ...parsed.traits },
+      cardsOwned: Array.isArray(parsed.cardsOwned) ? parsed.cardsOwned : [],
+    };
+  } catch {
+    return defaultState();
+  }
+};
+
+const saveState = (state) => {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+};
+
+const state = loadState();
+
+const registerVisit = () => {
+  if (state.lastVisitDate === todayKey) {
+    return;
+  }
+
+  if (!state.lastVisitDate) {
+    state.totalVisits = 1;
+    state.visitStreak = 1;
+  } else {
+    const gap = diffDays(state.lastVisitDate, todayKey);
+    state.totalVisits += 1;
+    state.visitStreak = gap === 1 ? state.visitStreak + 1 : 1;
+  }
+
+  state.lastVisitDate = todayKey;
+  state.worldCycle = Math.floor(Math.max(state.visitStreak - 1, 0) / 7);
+};
+
+registerVisit();
+
+const getWorldStage = () => Math.min(Math.max(state.visitStreak, 1), 7);
+
+const hashString = (value) => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
+const rarityWeight = (rarity) => {
+  const streakBonus = Math.min(state.visitStreak, 7);
+  const cycleBonus = state.worldCycle;
+  switch (rarity) {
+    case "common":
+      return 50 - streakBonus * 2;
+    case "rare":
+      return 28 + streakBonus * 2;
+    case "epic":
+      return 14 + streakBonus + cycleBonus;
+    case "legend":
+      return state.visitStreak >= 5 ? 6 + cycleBonus : 2;
+    case "mythic":
+      return state.visitStreak >= 7 ? 2 + cycleBonus : 0;
+    default:
+      return 0;
+  }
+};
+
+const getElementMeta = (id) => FATE_ELEMENTS.find((item) => item.id === id) || FATE_ELEMENTS[0];
+
+const getDominantElement = () => {
+  return Object.entries(state.elementAffinity).sort((a, b) => b[1] - a[1])[0][0];
+};
+
+const getTopTrait = () => {
+  return Object.entries(state.traits).sort((a, b) => b[1] - a[1])[0][0];
+};
+
+const titleByElementAndTrait = (elementId, traitId) => {
+  const titles = {
+    moon: {
+      intuition: "月影の案内人",
+      harmony: "宵月の調律者",
+      focus: "群青の観測者",
+      kindness: "月灯の守り手",
+      courage: "夜明け前の歩行者",
+      curiosity: "月舟の探索者",
+    },
+    star: {
+      intuition: "星図の予感者",
+      harmony: "星屑の収集家",
+      focus: "星読みの記録者",
+      kindness: "遠星の語り手",
+      courage: "流星の追跡者",
+      curiosity: "星廊の冒険者",
+    },
+    wind: {
+      intuition: "風紋の感知者",
+      harmony: "風渡る調停者",
+      focus: "風見の設計者",
+      kindness: "風花の案内役",
+      courage: "追風の越境者",
+      curiosity: "風路の採集家",
+    },
+    dream: {
+      intuition: "夢界の翻訳者",
+      harmony: "夢紡ぎの園丁",
+      focus: "微睡の観測者",
+      kindness: "夢灯の保護者",
+      courage: "白昼夢の開拓者",
+      curiosity: "夢湖の漂流者",
+    },
+    silence: {
+      intuition: "静寂の採譜者",
+      harmony: "深夜の調和者",
+      focus: "静夜の建築家",
+      kindness: "沈黙の看守人",
+      courage: "無音の冒険者",
+      curiosity: "静謐の探索者",
+    },
+    spark: {
+      intuition: "火花の感応者",
+      harmony: "灯火の媒介者",
+      focus: "閃光の鍛錬者",
+      kindness: "微熱の配達人",
+      courage: "火花の先導者",
+      curiosity: "残光の採掘者",
+    },
+    light: {
+      intuition: "光輪の読解者",
+      harmony: "黎明の祝祭者",
+      focus: "白光の整備者",
+      kindness: "祝福の守人",
+      courage: "曙光の開門者",
+      curiosity: "光庭の旅人",
+    },
+  };
+
+  return titles[elementId]?.[traitId] || "夜の旅人";
+};
+
+const getCurrentTitle = () => titleByElementAndTrait(getDominantElement(), getTopTrait());
+
+const getCurrentWorld = () => WORLD_STAGES[getWorldStage() - 1];
+
+const pickDailyChoices = () => {
+  const seed = hashString(`${state.visitorId}|${todayKey}|choices`);
+  const pool = [...DAILY_CHOICES];
+  const selected = [];
+
+  while (selected.length < 3 && pool.length > 0) {
+    const index = (seed + selected.length * 7) % pool.length;
+    selected.push(pool.splice(index, 1)[0]);
+  }
+
+  return selected;
+};
+
+const rarityLabel = {
+  common: "common",
+  rare: "rare",
+  epic: "epic",
+  legend: "legend",
+  mythic: "mythic",
+};
+
+const pickCard = (choice) => {
+  const eligible = CARD_LIBRARY.filter((card) => card.unlockStage <= getWorldStage());
+  const seed = hashString(`${state.visitorId}|${todayKey}|${choice.id}|${state.totalVisits}|${state.visitStreak}`);
+
+  const weighted = eligible.map((card) => ({
+    card,
+    weight: rarityWeight(card.rarity) + (card.element === choice.element ? 8 : 0) + (card.element === getDominantElement() ? 5 : 0),
+  })).filter((entry) => entry.weight > 0);
+
+  const totalWeight = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+  let cursor = seed % totalWeight;
+
+  for (const entry of weighted) {
+    cursor -= entry.weight;
+    if (cursor < 0) {
+      return entry.card;
+    }
+  }
+
+  return weighted[0].card;
+};
+
+const buildImpactTags = (choice, card, newCard) => {
+  const tags = [];
+  tags.push(`属性: ${getElementMeta(choice.element).label} +2`);
+  Object.entries(choice.effects).forEach(([key, value]) => {
+    tags.push(`${TRAIT_LABELS[key]} +${value}`);
+  });
+  tags.push(`カード: ${card.name}`);
+  tags.push(newCard ? "新規カード獲得" : "既知カードを再発見");
+  return tags;
+};
+
+const renderImpactTags = (items) => {
+  dailyImpact.innerHTML = items.map((item) => `<span class="impact-tag">${item}</span>`).join("");
+};
+
+const renderRewardCard = (card, isNew = false) => {
+  if (!card) {
+    rewardCard.classList.add("is-empty");
+    rewardCard.dataset.rarity = "";
+    rewardCardRarity.textContent = "FATE";
+    rewardCardName.textContent = "まだカードは届いていません";
+    rewardCardAttribute.textContent = "属性: 未定";
+    rewardCardDescription.textContent = "今日の運命を選ぶと、その結果に応じた一枚がここに記録されます。";
+    cardRewardStatus.textContent = "未獲得";
+    return;
+  }
+
+  rewardCard.classList.remove("is-empty");
+  rewardCard.dataset.rarity = card.rarity;
+  rewardCardRarity.textContent = rarityLabel[card.rarity];
+  rewardCardName.textContent = card.name;
+  rewardCardAttribute.textContent = `属性: ${getElementMeta(card.element).label}`;
+  rewardCardDescription.textContent = card.description;
+  cardRewardStatus.textContent = isNew ? "新規獲得" : "本日の記録";
+};
+
+const renderCollection = () => {
+  const owned = new Set(state.cardsOwned);
+  collectionGrid.innerHTML = CARD_LIBRARY.map((card) => {
+    const unlocked = owned.has(card.id);
+    return `
+      <article class="collection-item ${unlocked ? "" : "is-locked"}">
+        <div>
+          <p class="card-rarity">${unlocked ? rarityLabel[card.rarity] : "unknown"}</p>
+          <h4>${unlocked ? card.name : "未取得カード"}</h4>
+        </div>
+        <p>${unlocked ? card.description : "影だけが残っています。"}</p>
+      </article>
+    `;
+  }).join("");
+
+  const count = state.cardsOwned.length;
+  collectionRate.textContent = `${count} / ${CARD_LIBRARY.length}`;
+  collectionPercent.textContent = `${Math.round((count / CARD_LIBRARY.length) * 100)}%`;
+};
+
+const renderTraits = () => {
+  const entries = Object.entries(state.traits);
+  const maxValue = Math.max(...entries.map(([, value]) => value), 1);
+
+  traitMeters.innerHTML = entries.map(([key, value]) => `
+    <div class="trait-item">
+      <div class="trait-head">
+        <span>${TRAIT_LABELS[key]}</span>
+        <span>${value}</span>
+      </div>
+      <div class="trait-bar">
+        <span class="trait-fill" style="width: ${(value / maxValue) * 100}%"></span>
+      </div>
+    </div>
+  `).join("");
+};
+
+const renderAchievements = () => {
+  achievementList.innerHTML = ACHIEVEMENTS.map((achievement) => {
+    const earned = achievement.condition(state);
+    return `
+      <article class="achievement-card ${earned ? "is-earned" : ""}">
+        <h4>${achievement.label}</h4>
+        <p>${earned ? "達成済み" : "未達成"}</p>
+      </article>
+    `;
+  }).join("");
+};
+
+const renderWorld = () => {
+  const current = getCurrentWorld();
+  const stage = getWorldStage();
+  const progress = (stage / 7) * 100;
+
+  document.body.dataset.stage = String(stage);
+  document.body.dataset.element = getDominantElement();
+
+  heroWorldPhase.textContent = `phase 0${stage}`;
+  heroWorldNote.textContent = current.description;
+  heroTitle.textContent = getCurrentTitle();
+  heroElement.textContent = `属性: ${getElementMeta(getDominantElement()).label}`;
+
+  worldName.textContent = current.name;
+  worldDescription.textContent = current.description;
+  worldProgressBar.style.width = `${progress}%`;
+  worldNextHint.textContent = current.nextHint;
+
+  worldStageLabel.textContent = `第${stage}段階`;
+  worldCycleLabel.textContent = `${state.worldCycle}周`;
+
+  stageList.innerHTML = WORLD_STAGES.map((item) => `
+    <article class="stage-card ${item.stage === stage ? "is-active" : ""}">
+      <h4>${item.name}</h4>
+      <p>${item.description}</p>
+    </article>
+  `).join("");
+};
+
+const renderStatus = () => {
+  const element = getElementMeta(getDominantElement());
+  statusTitle.textContent = getCurrentTitle();
+  statusElement.textContent = `属性: ${element.label}`;
+  totalVisits.textContent = `${state.totalVisits}日`;
+  visitStreak.textContent = `${state.visitStreak}日`;
+};
+
+const renderHints = () => {
+  if (state.visitStreak >= 7) {
+    hiddenHint.textContent = "7日を超えた世界では、伝説級と神話級のカードが現れ始めます。";
+  } else if (state.visitStreak >= 4) {
+    hiddenHint.textContent = "第四夜以降は塔の影とともに、上位カードの出現率がわずかに上がります。";
+  } else {
+    hiddenHint.textContent = "連続訪問が続くほど、光の深いカードが出やすくなります。";
+  }
+};
+
+const formattedToday = new Date().toLocaleDateString("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  weekday: "long",
+});
+
+todayDate.textContent = formattedToday;
+
+const renderDailyAction = () => {
+  const choices = pickDailyChoices();
+  const daily = state.dailyAction && state.dailyAction.date === todayKey ? state.dailyAction : null;
+
+  choiceGrid.innerHTML = choices.map((choice) => `
+    <button class="choice-card ${daily ? "is-used" : ""}" type="button" data-choice-id="${choice.id}">
+      <p class="choice-sigil">${choice.sigil}</p>
+      <h4>${choice.title}</h4>
+      <p>${choice.text}</p>
+      <small>属性: ${getElementMeta(choice.element).label}</small>
+    </button>
+  `).join("");
+
+  if (!daily) {
+    dailyStatusTitle.textContent = "今日の選択はまだです。";
+    sigilCore.textContent = "未";
+    renderRewardCard(null);
+    renderImpactTags(["一日一度の選択", "育成結果を保存", "カード獲得あり"]);
+    return;
+  }
+
+  const chosen = DAILY_CHOICES.find((item) => item.id === daily.choiceId);
+  const card = CARD_LIBRARY.find((item) => item.id === daily.cardId);
+
+  dailyStatusTitle.textContent = "今日の運命は記録済みです。";
+  sigilCore.textContent = chosen?.sigil || "記";
+  dailyResultLabel.textContent = "Recorded";
+  dailyResultTitle.textContent = chosen?.title || "今日の運命";
+  dailyResultText.textContent = daily.resultText;
+  renderImpactTags(daily.impactTags || []);
+  renderRewardCard(card, daily.newCard);
+};
+
+const applyDailyChoice = (choiceId) => {
+  if (state.dailyAction && state.dailyAction.date === todayKey) {
+    return;
+  }
+
+  const choice = DAILY_CHOICES.find((item) => item.id === choiceId);
+  if (!choice) {
+    return;
+  }
+
+  state.elementAffinity[choice.element] += 2;
+  Object.entries(choice.effects).forEach(([key, value]) => {
+    state.traits[key] += value;
+  });
+
+  const card = pickCard(choice);
+  const newCard = !state.cardsOwned.includes(card.id);
+  if (newCard) {
+    state.cardsOwned.push(card.id);
+  }
+
+  const resultText = `${choice.fortune} その余韻のなかで、${card.name} があなたの図鑑へ加わりました。`;
+  const impactTags = buildImpactTags(choice, card, newCard);
+
+  state.dailyAction = {
+    date: todayKey,
+    choiceId: choice.id,
+    cardId: card.id,
+    newCard,
+    resultText,
+    impactTags,
+  };
+
+  saveState(state);
+  renderAll();
+};
+
+choiceGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-choice-id]");
+  if (!button) {
+    return;
+  }
+
+  applyDailyChoice(button.dataset.choiceId);
+});
+
+const renderAll = () => {
+  renderWorld();
+  renderStatus();
+  renderTraits();
+  renderAchievements();
+  renderHints();
+  renderCollection();
+  renderDailyAction();
+
+  const daily = state.dailyAction && state.dailyAction.date === todayKey ? state.dailyAction : null;
+  if (daily) {
+    dailyResultLabel.textContent = "Destiny Fixed";
+    const chosen = DAILY_CHOICES.find((item) => item.id === daily.choiceId);
+    dailyResultTitle.textContent = chosen?.title || "今日の運命";
+    dailyResultText.textContent = daily.resultText;
+    renderImpactTags(daily.impactTags || []);
+  } else {
+    dailyResultLabel.textContent = "Awaiting";
+    dailyResultTitle.textContent = "今日の運命は、選択のあとに立ち上がります。";
+    dailyResultText.textContent = "一度選んだ運命は、日付が変わるまで保存されます。静かな気持ちで一つ選んでみてください。";
+  }
+};
+
+const buildStarfield = () => {
+  const countByStage = {
+    1: 22,
+    2: 38,
+    3: 54,
+    4: 72,
+    5: 92,
+    6: 108,
+    7: 126,
+  };
+  const count = countByStage[getWorldStage()] || 38;
+  const fragment = document.createDocumentFragment();
+  for (let index = 0; index < count; index += 1) {
+    const star = document.createElement("span");
+    star.className = "star";
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.animationDelay = `${Math.random() * 6}s`;
+    star.style.opacity = `${0.3 + Math.random() * 0.7}`;
+    fragment.appendChild(star);
+  }
+  starfield.appendChild(fragment);
 };
 
 const revealObserver = new IntersectionObserver(
@@ -378,7 +560,7 @@ const revealObserver = new IntersectionObserver(
     });
   },
   {
-    threshold: 0.16,
+    threshold: 0.14,
     rootMargin: "0px 0px -10% 0px",
   }
 );
@@ -391,270 +573,25 @@ revealTargets.forEach((element) => {
   revealObserver.observe(element);
 });
 
-const randomFrom = (items, seed) => items[Math.abs(seed) % items.length];
-
-const hashString = (value) => {
-  let hash = 0;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash << 5) - hash + value.charCodeAt(index);
-    hash |= 0;
-  }
-
-  return Math.abs(hash);
-};
-
-const getVisitorId = () => {
-  const saved = window.localStorage.getItem(VISITOR_KEY);
-  if (saved) {
-    return saved;
-  }
-
-  const seedSource = [
-    navigator.userAgent,
-    navigator.language,
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-    window.screen.width,
-    window.screen.height,
-    Math.random().toString(36).slice(2, 10),
-  ].join("|");
-
-  const visitorId = `vp-${hashString(seedSource)}-${Date.now().toString(36)}`;
-  window.localStorage.setItem(VISITOR_KEY, visitorId);
-  return visitorId;
-};
-
-const getTodayKey = () => {
-  const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-};
-
-const getDailySeed = () => {
-  const todayKey = getTodayKey();
-  const visitorSeed = hashString(getVisitorId());
-  return hashString(`${todayKey}|${visitorSeed}`);
-};
-
-const renderDailyFortune = () => {
-  const today = new Date();
-  const seed = getDailySeed();
-  const formattedDate = today.toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  });
-
-  todayDateLabel.textContent = formattedDate;
-  todayHeadline.textContent = randomFrom(dailyPools.headline, seed);
-  todaySummary.textContent = randomFrom(dailyPools.summary, seed + 3);
-  fortuneLove.textContent = randomFrom(dailyPools.love, seed + 5);
-  fortuneWork.textContent = randomFrom(dailyPools.work, seed + 7);
-  fortuneMoney.textContent = randomFrom(dailyPools.money, seed + 11);
-  fortuneHealth.textContent = randomFrom(dailyPools.health, seed + 13);
-  fortuneKeyword.textContent = randomFrom(dailyPools.keyword, seed + 17);
-};
-
-const lockTodayFortune = () => {
-  if (!todayPanel) {
-    return;
-  }
-
-  todayPanel.classList.add("is-locked");
-  todayPanel.classList.remove("is-unlocked");
-  if (todayLockTitle) {
-    todayLockTitle.textContent = "まずはおみくじを引いてください。";
-  }
-  if (todayLockMessage) {
-    todayLockMessage.textContent = "今日の運勢はまだ封印中です。先におみくじを引くと、その結果をヒントに今日の流れが解放されます。";
-  }
-};
-
-const unlockTodayFortune = (result, options = {}) => {
-  const { animate = true } = options;
-  if (!todayPanel) {
-    return;
-  }
-
-  if (todayLockTitle) {
-    todayLockTitle.textContent = `${result.rank}を受信。今日の運勢を解放します。`;
-  }
-  if (todayLockMessage) {
-    todayLockMessage.textContent = result.rank === "凶"
-      ? "慎重モードで読み解く一日です。守りの運勢も、見方を変えれば立派な武器になります。"
-      : `${result.rank}の流れをもとに、今日の5つの運勢を展開します。気になる項目から眺めてください。`;
-  }
-
-  if (!animate || prefersReducedMotion.matches) {
-    todayPanel.classList.remove("is-locked");
-    todayPanel.classList.add("is-unlocked");
-    return;
-  }
-
-  window.setTimeout(() => {
-    todayPanel.classList.remove("is-locked");
-    todayPanel.classList.add("is-unlocked");
-  }, 460);
-};
-
-const clearFortuneRankClasses = () => {
-  const rankClasses = [
-    "rank-daikichi",
-    "rank-chukichi",
-    "rank-shokichi",
-    "rank-kichi",
-    "rank-suekichi",
-    "rank-kyo",
-  ];
-
-  fortuneStage.classList.remove(...rankClasses);
-  fortuneShell.classList.remove(...rankClasses);
-  resultRank.classList.remove(...rankClasses);
-};
-
-const setFortuneVisual = (result) => {
-  const rankClass = `rank-${result.id}`;
-
-  clearFortuneRankClasses();
-  fortuneStage.classList.add(rankClass);
-  fortuneShell.classList.add(rankClass);
-  resultRank.classList.add(rankClass);
-  fortuneShell.style.background = result.tone;
-  fortuneShell.querySelector(".shell-core").textContent = result.symbol;
-  resultRank.textContent = result.rank;
-  resultHeading.textContent = result.title;
-  resultMessage.textContent = result.message;
-  resultItem.textContent = result.item;
-  resultAction.textContent = result.action;
-  if (machineSub) {
-    machineSub.textContent = result.rank === "凶" ? "波を静かに整えています" : `${result.rank}のシグナルを受信しました`;
-  }
-};
-
-const runFortuneAnimation = (result, options = {}) => {
-  const { skipDrawLock = false } = options;
-  fortuneShell.classList.remove("is-shaking", "is-revealed");
-  fortuneStage.classList.remove("is-bursting");
-
-  void fortuneShell.offsetWidth;
-
-  fortuneShell.classList.add("is-shaking");
-  if (drawButton) {
-    drawButton.disabled = true;
-    drawButton.textContent = "運勢を生成中...";
-  }
-
-  window.setTimeout(() => {
-    setFortuneVisual(result);
-    fortuneStage.classList.add("is-bursting");
-    fortuneShell.classList.remove("is-shaking");
-    fortuneShell.classList.add("is-revealed");
-  }, 520);
-
-  window.setTimeout(() => {
-    if (!drawButton) {
-      return;
-    }
-
-    if (skipDrawLock) {
-      drawButton.disabled = false;
-      drawButton.textContent = "おみくじを引く";
-      return;
-    }
-
-    drawButton.disabled = true;
-    drawButton.textContent = "今日は引き済みです";
-    fortuneStage.classList.remove("is-bursting");
-  }, 1100);
-};
-
-const saveTodayOmikuji = (result) => {
-  window.localStorage.setItem(
-    OMIKUJI_KEY,
-    JSON.stringify({
-      date: getTodayKey(),
-      resultId: result.id,
-    })
-  );
-};
-
-const getSavedTodayOmikuji = () => {
-  const raw = window.localStorage.getItem(OMIKUJI_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed.date !== getTodayKey()) {
-      return null;
-    }
-
-    return omikujiResults.find((item) => item.id === parsed.resultId) || null;
-  } catch {
-    return null;
-  }
-};
-
-const restoreTodayOmikuji = () => {
-  const savedResult = getSavedTodayOmikuji();
-
-  if (!savedResult) {
-    if (drawButton) {
-      drawButton.disabled = false;
-      drawButton.textContent = "おみくじを引く";
-    }
-    lockTodayFortune();
-    return;
-  }
-
-  setFortuneVisual(savedResult);
-  fortuneShell.classList.add("is-revealed");
-  unlockTodayFortune(savedResult, { animate: false });
-  if (drawButton) {
-    drawButton.disabled = true;
-    drawButton.textContent = "今日は引き済みです";
-  }
-};
-
-if (drawButton) {
-  drawButton.addEventListener("click", () => {
-    const alreadyDrawn = getSavedTodayOmikuji();
-    if (alreadyDrawn) {
-      restoreTodayOmikuji();
-      return;
-    }
-
-    const visitorSeed = hashString(`${getVisitorId()}|${getTodayKey()}|omikuji`);
-    const index = visitorSeed % omikujiResults.length;
-    const result = omikujiResults[index];
-
-    saveTodayOmikuji(result);
-    runFortuneAnimation(result);
-    unlockTodayFortune(result);
-  });
-}
-
 let pointerX = window.innerWidth / 2;
-let pointerY = window.innerHeight / 3;
+let pointerY = window.innerHeight / 2;
 let pointerFrame = null;
 
-const updateCursorAura = () => {
+const updateCursor = () => {
   document.documentElement.style.setProperty("--cursor-x", `${pointerX}px`);
   document.documentElement.style.setProperty("--cursor-y", `${pointerY}px`);
   pointerFrame = null;
 };
 
 window.addEventListener("pointermove", (event) => {
-  if (!cursorAura || prefersReducedMotion.matches) {
+  if (prefersReducedMotion.matches) {
     return;
   }
 
   pointerX = event.clientX;
   pointerY = event.clientY;
-
   if (pointerFrame === null) {
-    pointerFrame = window.requestAnimationFrame(updateCursorAura);
+    pointerFrame = window.requestAnimationFrame(updateCursor);
   }
 });
 
@@ -668,10 +605,10 @@ const applyParallax = () => {
 
   parallaxTargets.forEach((element) => {
     const rect = element.getBoundingClientRect();
-    const depth = Number(element.dataset.depth || "0");
+    const depth = Number(element.dataset.depth || 0);
     const offsetY = rect.top + rect.height / 2 - window.innerHeight / 2;
     const x = (pointerX - window.innerWidth / 2) * depth * 0.018;
-    const y = offsetY * depth * -0.16;
+    const y = offsetY * depth * -0.14;
     element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   });
 };
@@ -680,6 +617,7 @@ window.addEventListener("scroll", applyParallax, { passive: true });
 window.addEventListener("resize", applyParallax);
 window.addEventListener("load", applyParallax);
 
-renderDailyFortune();
-restoreTodayOmikuji();
+buildStarfield();
+renderAll();
+saveState(state);
 applyParallax();
