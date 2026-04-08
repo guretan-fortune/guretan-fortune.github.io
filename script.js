@@ -483,19 +483,26 @@
     nodes.particleField.innerHTML = stars.join("");
   };
 
-  const renderAll = () => renderOverview();
+  const renderAll = () => {
+    hydrateState();
+    renderOverview();
+  };
 
   nodes.drawButton.addEventListener("click", () => drawCard("daily"));
   nodes.ticketButton.addEventListener("click", () => drawCard("ticket"));
   nodes.ritualTrigger.addEventListener("click", handleHiddenTrigger);
   window.addEventListener("pageshow", () => {
-    hydrateState();
     renderAll();
   });
   window.addEventListener("storage", (event) => {
     if (event.key !== STORAGE_KEY) return;
-    hydrateState();
     renderAll();
+  });
+  window.addEventListener("focus", () => {
+    renderAll();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") renderAll();
   });
 
   createParticles();
