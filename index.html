@@ -3,302 +3,283 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="運命を育て、運勢カードを集め、7日ごとに世界が変化する個人用ホームページ。Webアートとミニゲームの中間を目指した体験型サイト。">
-  <title>運命育成サイト | Little Fate Archive</title>
+  <meta name="description" content="毎日カードを引いてキャラクターを育て、収集と成長を経て最終ボスへ挑む運命育成RPGサイト。">
+  <title>運命育成録 | Fate Grow Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-stage="1" data-element="moon">
-  <div class="backdrop" aria-hidden="true">
-    <div class="nebula nebula-a"></div>
-    <div class="nebula nebula-b"></div>
-    <div class="starfield" id="starfield"></div>
-    <div class="moon-glow"></div>
-    <div class="cursor-light"></div>
-    <div class="world-silhouette">
-      <span class="tower tower-a"></span>
-      <span class="tower tower-b"></span>
-      <span class="tower tower-c"></span>
-      <span class="bridge"></span>
-      <span class="guide"></span>
-      <span class="secret-door"></span>
-    </div>
+<body class="page-home">
+  <div class="cosmos" aria-hidden="true">
+    <div class="cosmos-gradient"></div>
+    <div class="moon-orbit moon-orbit-a"></div>
+    <div class="moon-orbit moon-orbit-b"></div>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+    <div class="particle-field" id="particleField"></div>
   </div>
 
-  <header class="topbar" id="top">
-    <a class="brand" href="#hero">
-      <span class="brand-mark">LF</span>
-      <span class="brand-copy">
-        <strong>Little Fate Archive</strong>
-        <span>personal world / collectible destiny</span>
+  <header class="site-header shell">
+    <a class="brand" href="#top">
+      <span class="brand-mark">FG</span>
+      <span>
+        <strong>Fate Grow Archive</strong>
+        <small>運命を引き、育て、深層へ進む個人RPGサイト</small>
       </span>
     </a>
-    <nav class="nav" aria-label="主要ナビゲーション">
-      <a href="#today">今日の運命</a>
-      <a href="#cards">運勢カード</a>
-      <a href="#growth">育成状況</a>
-      <a href="#world">世界の変化</a>
-      <a href="#about">このサイト</a>
+    <nav class="site-nav" aria-label="メインナビゲーション">
+      <a href="#ritual">今日のカード</a>
+      <a href="#status">育成状況</a>
+      <a href="#collection">収集庫</a>
+      <a href="#about">案内</a>
+      <a class="nav-boss-link" href="boss.html">ボス挑戦</a>
     </nav>
   </header>
 
-  <main>
-    <section class="hero section" id="hero">
-      <div class="hero-copy" data-reveal>
-        <p class="eyebrow">Destiny Growth / Card Collect / 7 Days World Shift</p>
-        <h1>
-          運命を育てる、<br>
-          小さな世界へ。
-        </h1>
-        <p class="lead">
-          ここは、毎日ひとつの選択を重ねることで、あなた自身の運命キャラクターが育ち、
-          収集した運勢カードとともに世界が変化していく個人用ホームページです。
-          占いサイトでも、ゲームでも、ポートフォリオでもあり、そのどれにも収まらない場所を目指しました。
+  <main id="top">
+    <section class="hero shell section">
+      <div class="hero-copy">
+        <p class="eyebrow">Daily Fate Draw / Growth RPG / Personal World Archive</p>
+        <h1>毎日一枚の運命が、<br>あなたの旅人をボス戦へ近づける。</h1>
+        <p class="hero-lead">
+          このサイトは、星と月の記録を集めて育つ運命育成録です。毎日1回だけ引けるカードが能力値を押し上げ、
+          稀に秘薬や護符も落ちます。積み重ねた成長は、そのまま深層のボスバトルで試されます。
         </p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#today">今日の運命を始める</a>
-          <a class="button button-secondary" href="#cards">カード図鑑を見る</a>
+          <a class="button button-primary" href="#ritual">今日のカードを引く</a>
+          <a class="button button-secondary" href="boss.html">ボスに挑戦する</a>
         </div>
       </div>
 
-      <div class="hero-panels" data-depth="0.12" aria-hidden="true">
-        <article class="glass panel-ticket">
-          <p class="mini-label">World Phase</p>
-          <p class="panel-value" id="heroWorldPhase">phase 01</p>
-          <p class="panel-note" id="heroWorldNote">静かな夜空だけが広がる、始まりの世界。</p>
+      <aside class="hero-panels">
+        <article class="glass panel phase-panel">
+          <p class="panel-label">World Phase</p>
+          <h2 id="worldPhaseTitle">星屑の序章</h2>
+          <p id="worldPhaseDescription">静かな世界。今日の一枚が、深層への最初の灯になります。</p>
         </article>
-        <article class="glass panel-orbit">
-          <span class="orbit orbit-a"></span>
-          <span class="orbit orbit-b"></span>
-          <p>fate / memory / light</p>
+        <article class="glass panel small-panel">
+          <p class="panel-label">連続訪問</p>
+          <p class="metric"><span id="streakDays">0</span>日</p>
+          <p class="panel-note">連続日数で世界が進み、報酬期待も少し上がります。</p>
         </article>
-        <article class="glass panel-character">
-          <p class="mini-label">Current Title</p>
-          <p class="panel-character-title" id="heroTitle">月影の案内人</p>
-          <p class="panel-note" id="heroElement">属性: 月</p>
+        <article class="glass panel small-panel">
+          <p class="panel-label">次の目標</p>
+          <p class="metric metric-sub" id="nextMilestone">Lv5 到達</p>
+          <p class="panel-note">十分に育ったら、深層の守護者へ挑戦してください。</p>
         </article>
-      </div>
+      </aside>
     </section>
 
-    <section class="today section" id="today">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">Today</p>
-        <h2>今日の運命</h2>
-        <p>
-          一日一度だけ、運命の選択ができます。選んだ行動は属性や性質、称号、獲得カード、
-          そしてこの世界の表情そのものに影響します。
-        </p>
+    <section class="shell section" id="ritual">
+      <div class="section-heading">
+        <p class="eyebrow">Daily Ritual</p>
+        <h2>今日のカードを引く</h2>
+        <p>1日1回だけ引ける運命カードです。レア度と効果が毎日変わり、稀に戦闘用アイテムも手に入ります。</p>
       </div>
 
-      <div class="today-layout">
-        <article class="glass ritual-panel" data-reveal>
-          <div class="ritual-head">
+      <div class="ritual-layout">
+        <article class="glass ritual-stage">
+          <div class="ritual-header">
             <div>
-              <p class="mini-label">Daily Ritual</p>
-              <h3 id="dailyStatusTitle">今日の選択はまだです。</h3>
+              <p class="panel-label">本日の儀式</p>
+              <h3 id="drawStatusTitle">まだ今日の運命は開かれていません。</h3>
             </div>
             <p class="ritual-date" id="todayDate"></p>
           </div>
 
-          <div class="fortune-sigil" id="fortuneSigil" aria-hidden="true">
-            <span class="sigil-ring ring-a"></span>
-            <span class="sigil-ring ring-b"></span>
-            <span class="sigil-core" id="sigilCore">未</span>
+          <div class="card-vault" id="cardVault">
+            <div class="vault-halo"></div>
+            <div class="draw-card is-idle" id="drawCard">
+              <div class="draw-card-face">
+                <p class="card-rarity" id="drawRarity">FATE</p>
+                <h3 id="drawName">封じられた運命札</h3>
+                <p class="card-copy" id="drawDescription">まだ何も引かれていません。儀式を始めると、今日の一枚が姿を見せます。</p>
+                <div class="stat-echo" id="statEcho">
+                  <span>HP ???</span>
+                  <span>ATK ???</span>
+                  <span>DEF ???</span>
+                  <span>SPD ???</span>
+                  <span>LUK ???</span>
+                </div>
+              </div>
+            </div>
+            <button class="button button-primary draw-button" id="drawButton" type="button">今日のカードを引く</button>
           </div>
 
-          <div class="choice-intro" id="choiceIntro">
-            <p>
-              今夜のあなたは、どの光を選びますか。
-              どの選択も正解ですが、育つ運命の輪郭は少しずつ変わっていきます。
-            </p>
-          </div>
-
-          <div class="choice-grid" id="choiceGrid" aria-live="polite"></div>
-
-          <div class="daily-result glass-sub" id="dailyResult" aria-live="polite">
-            <p class="result-label" id="dailyResultLabel">Awaiting</p>
-            <h3 id="dailyResultTitle">今日の運命は、選択のあとに立ち上がります。</h3>
-            <p id="dailyResultText">
-              一度選んだ運命は、日付が変わるまで保存されます。静かな気持ちで一つ選んでみてください。
-            </p>
-            <div class="daily-impact" id="dailyImpact"></div>
+          <div class="result-box" id="resultBox" aria-live="polite">
+            <p class="result-tag" id="resultTag">Awaiting Fate</p>
+            <h3 id="resultHeadline">カードを引くと、ここに今日の成長結果が表示されます。</h3>
+            <div class="delta-list" id="resultEffects"></div>
+            <p class="result-item" id="resultItem">アイテム報酬はまだありません。</p>
           </div>
         </article>
 
-        <aside class="glass today-side" data-reveal>
-          <div class="side-block">
-            <p class="mini-label">Visit Flow</p>
-            <ul class="side-list">
-              <li>1日1回、運命を選ぶ</li>
-              <li>運勢カードを獲得する</li>
-              <li>属性と性質が育つ</li>
-              <li>7日連続で世界が変化する</li>
+        <aside class="glass ritual-info">
+          <div class="info-block">
+            <p class="panel-label">レア度</p>
+            <ul class="rarity-guide">
+              <li><span class="rarity-dot common"></span>Common: 小幅成長</li>
+              <li><span class="rarity-dot rare"></span>Rare: 中幅成長</li>
+              <li><span class="rarity-dot epic"></span>Epic: 大幅成長</li>
+              <li><span class="rarity-dot legendary"></span>Legendary: 特別成長と強演出</li>
             </ul>
           </div>
-          <div class="side-block">
-            <p class="mini-label">Hidden Hint</p>
-            <p id="hiddenHint">
-              連続訪問が続くほど、光の深いカードが出やすくなります。
-            </p>
+          <div class="info-block">
+            <p class="panel-label">進行メモ</p>
+            <p id="worldProgressText">カードを重ねるほど、世界相と旅人の称号が変化します。</p>
+          </div>
+          <div class="info-block">
+            <p class="panel-label">ボス挑戦の目安</p>
+            <p id="bossAdvice">Lv8以上、HP120以上がひとつの目安です。</p>
           </div>
         </aside>
       </div>
     </section>
 
-    <section class="cards section" id="cards">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">Destiny Card</p>
-        <h2>運勢カード収集</h2>
-        <p>
-          毎日の選択のあとに、世界から一枚のカードが届きます。未取得カードは影のまま残り、
-          集めるほど図鑑の景色が豊かになっていきます。
-        </p>
+    <section class="shell section" id="status">
+      <div class="section-heading">
+        <p class="eyebrow">Growth Status</p>
+        <h2>旅人の育成状況</h2>
+        <p>レベル、能力値、連続訪問、世界進行がひと目で分かるようにまとめています。</p>
       </div>
 
-      <div class="card-reward-layout">
-        <article class="glass reward-panel" data-reveal>
-          <div class="reward-head">
-            <p class="mini-label">Today's Card</p>
-            <p class="reward-status" id="cardRewardStatus">未獲得</p>
+      <div class="dashboard-grid">
+        <article class="glass level-panel">
+          <div class="level-head">
+            <div>
+              <p class="panel-label">Traveler</p>
+              <h3 id="playerTitle">月下の新人</h3>
+              <p class="subtle" id="playerName">星詠みの旅人</p>
+            </div>
+            <div class="level-orb">
+              <span>Lv</span>
+              <strong id="playerLevel">1</strong>
+            </div>
           </div>
-          <div class="reward-stage" id="rewardStage">
-            <div class="reward-halo"></div>
-            <article class="reward-card card-shell is-empty" id="rewardCard">
-              <p class="card-rarity" id="rewardCardRarity">FATE</p>
-              <h3 id="rewardCardName">まだカードは届いていません</h3>
-              <p class="card-attribute" id="rewardCardAttribute">属性: 未定</p>
-              <p class="card-description" id="rewardCardDescription">
-                今日の運命を選ぶと、その結果に応じた一枚がここに記録されます。
-              </p>
-            </article>
+          <div class="xp-panel">
+            <div class="xp-track"><span class="xp-fill" id="xpFill"></span></div>
+            <div class="xp-row">
+              <span id="xpValue">0 EXP</span>
+              <span id="xpNext">次のLvまで 12</span>
+            </div>
+          </div>
+          <div class="status-mini-grid">
+            <div>
+              <span>総成長量</span>
+              <strong id="totalGrowth">0</strong>
+            </div>
+            <div>
+              <span>累計訪問</span>
+              <strong id="totalVisits">0日</strong>
+            </div>
+            <div>
+              <span>連続訪問</span>
+              <strong id="visitStreak">0日</strong>
+            </div>
+            <div>
+              <span>討伐状況</span>
+              <strong id="bossStatus">未踏破</strong>
+            </div>
           </div>
         </article>
 
-        <article class="glass collection-panel" data-reveal>
-          <div class="collection-head">
+        <article class="glass stats-panel">
+          <div class="panel-heading-row">
             <div>
-              <p class="mini-label">Collection</p>
-              <h3 id="collectionRate">0 / 30</h3>
+              <p class="panel-label">Current Stats</p>
+              <h3>現在ステータス</h3>
             </div>
-            <p class="collection-sub" id="collectionPercent">0%</p>
+            <p class="subtle">カードの累積効果が反映されます</p>
           </div>
-          <div class="collection-grid" id="collectionGrid"></div>
+          <div class="stats-list" id="statsList"></div>
+        </article>
+
+        <article class="glass world-panel">
+          <div class="panel-heading-row">
+            <div>
+              <p class="panel-label">World Shift</p>
+              <h3 id="phaseName">星屑の序章</h3>
+            </div>
+            <p class="subtle" id="phaseIndex">Phase 1 / 4</p>
+          </div>
+          <p id="phaseDetail">カードを重ねるほど世界が開き、最終試練に近づいていきます。</p>
+          <div class="phase-track"><span id="phaseFill"></span></div>
+          <div class="status-mini-grid compact">
+            <div>
+              <span>累計カード</span>
+              <strong id="totalCards">0枚</strong>
+            </div>
+            <div>
+              <span>コレクション率</span>
+              <strong id="collectionRate">0%</strong>
+            </div>
+          </div>
         </article>
       </div>
     </section>
 
-    <section class="growth section" id="growth">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">Growth</p>
-        <h2>育成状況</h2>
-        <p>
-          あなたの運命キャラクターは、訪問と選択を通じて少しずつ性格を持ち始めます。
-          属性、性質、称号の変化はすべて保存され、次の日に引き継がれます。
-        </p>
+    <section class="shell section" id="collection">
+      <div class="section-heading">
+        <p class="eyebrow">Collection</p>
+        <h2>所持カードとアイテム</h2>
+        <p>どの札を引いたか、何が育ち、何を持ち込めるかを一覧で確認できます。</p>
       </div>
 
-      <div class="growth-layout">
-        <article class="glass status-panel" data-reveal>
-          <div class="status-hero">
-            <p class="mini-label">Destiny Character</p>
-            <h3 id="statusTitle">月影の案内人</h3>
-            <p id="statusElement">属性: 月</p>
+      <div class="collection-layout">
+        <article class="glass inventory-panel">
+          <div class="panel-heading-row">
+            <div>
+              <p class="panel-label">Items</p>
+              <h3>所持アイテム</h3>
+            </div>
+            <p class="subtle">ボス戦で使用可能</p>
           </div>
-
-          <dl class="status-grid">
-            <div>
-              <dt>累計訪問日数</dt>
-              <dd id="totalVisits">0日</dd>
-            </div>
-            <div>
-              <dt>連続訪問日数</dt>
-              <dd id="visitStreak">0日</dd>
-            </div>
-            <div>
-              <dt>世界段階</dt>
-              <dd id="worldStageLabel">第1段階</dd>
-            </div>
-            <div>
-              <dt>周回数</dt>
-              <dd id="worldCycleLabel">0周</dd>
-            </div>
-          </dl>
-
-          <div class="traits" id="traitMeters"></div>
+          <div class="inventory-list" id="inventoryList"></div>
         </article>
 
-        <article class="glass achievement-panel" data-reveal>
-          <p class="mini-label">Milestones</p>
-          <div class="achievement-list" id="achievementList"></div>
+        <article class="glass card-panel">
+          <div class="panel-heading-row">
+            <div>
+              <p class="panel-label">Card Archive</p>
+              <h3>カードコレクション</h3>
+            </div>
+            <p class="subtle" id="collectionMeta">0 / 32</p>
+          </div>
+          <div class="card-grid" id="cardCollection"></div>
         </article>
       </div>
     </section>
 
-    <section class="world section" id="world">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">World Shift</p>
-        <h2>世界の変化</h2>
-        <p>
-          このサイトの背景世界は、連続訪問日数に応じて7段階で育ちます。星が増え、月が濃くなり、
-          建物や案内役、秘密の扉が姿を現し、7日目には祝福が開きます。
-        </p>
-      </div>
-
-      <div class="world-layout">
-        <article class="glass world-panel" data-reveal>
-          <p class="mini-label">Current World</p>
-          <h3 id="worldName">第一夜: 星待ちの庭</h3>
-          <p id="worldDescription">
-            まだ静かな空だけが広がっています。けれど、夜は確かに育ちはじめています。
-          </p>
-          <div class="world-progress">
-            <div class="world-track">
-              <span class="world-progress-bar" id="worldProgressBar"></span>
-            </div>
-            <p id="worldNextHint">次の変化まであと1日。</p>
-          </div>
-        </article>
-
-        <article class="glass stage-list-panel" data-reveal>
-          <p class="mini-label">Stages</p>
-          <div class="stage-list" id="stageList"></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="about section" id="about">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">About</p>
-        <h2>この世界の主について</h2>
-      </div>
-
+    <section class="shell section" id="about">
       <div class="about-layout">
-        <article class="glass about-card" data-reveal>
-          <p class="mini-label">Profile</p>
-          <h3>現実の制作と、夜の世界づくりを横断する個人サイト。</h3>
+        <article class="glass profile-panel">
+          <p class="panel-label">Profile / Site Concept</p>
+          <h2>個人ホームページを、育成RPGの記録庫として。</h2>
           <p>
-            このページは、自己紹介をただ並べる代わりに、自分の制作姿勢そのものを世界観として置くために作りました。
-            企画、UI、フロントエンド、インタラクション設計を横断しながら、触れた人の記憶に残る体験を目指しています。
+            このサイトは、日々の小さなアクセスをひとつの物語に変えるために作られています。
+            プロフィールや制作姿勢も、世界観の中で「旅人の記録」として自然に読める構成にしました。
+          </p>
+          <p>
+            毎日引くカード、積み上がる能力、集まるアイテム、そして最後に待つボス戦。
+            個人サイトでありながら、遊べる目的と継続の動機がある体験型ページを目指しています。
           </p>
         </article>
-        <article class="glass about-card" data-reveal>
-          <p class="mini-label">Site Intent</p>
-          <h3>ポートフォリオであり、小さな継続体験でもある。</h3>
+
+        <article class="glass boss-cta-panel">
+          <p class="panel-label">Final Trial</p>
+          <h2>育ったら、深層へ。</h2>
           <p>
-            訪問者が毎日少しずつ変化を見つけ、カードを集め、気づけばこのサイトに感情を持つ。
-            そんな関係性を目指して、個人ホームページの形をゲーム寄りに変形させています。
+            現在のレベルと能力値、所持アイテムをそのまま持ち込んで、別ページのボスバトルに挑戦できます。
+            防御や回復の使いどころまで含めて、育成結果が戦況を左右します。
           </p>
+          <a class="button button-primary button-wide" href="boss.html">ボスに挑戦する</a>
         </article>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>Little Fate Archive</p>
-    <a href="#top">ページ上部へ戻る</a>
-  </footer>
+  <div class="toast" id="toast" aria-live="polite"></div>
 
   <script src="data.js"></script>
   <script src="script.js"></script>

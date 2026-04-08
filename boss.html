@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="育成した旅人で最終ボスに挑戦するターン制バトルページ。">
+  <title>ボスバトル | Fate Grow Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-boss">
+  <div class="cosmos" aria-hidden="true">
+    <div class="cosmos-gradient"></div>
+    <div class="moon-orbit moon-orbit-a"></div>
+    <div class="moon-orbit moon-orbit-b"></div>
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+    <div class="particle-field" id="particleField"></div>
+  </div>
+
+  <header class="site-header shell">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">FG</span>
+      <span>
+        <strong>Fate Grow Archive</strong>
+        <small>深層試練 / Boss Battle</small>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="ページ遷移">
+      <a href="index.html">メインページへ戻る</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="shell section boss-hero">
+      <article class="glass boss-figure">
+        <p class="eyebrow">Final Encounter</p>
+        <h2 id="bossName">終末星喰 アストラル・デヴォア</h2>
+        <p id="bossDescription">育成した者だけを試す深層の守護者。準備不足なら押し切られ、鍛え上げていれば突破できる相手です。</p>
+        <div class="boss-visual" id="bossVisual">
+          <span class="boss-visual-label" id="bossVisualLabel">BOSS PLACEHOLDER</span>
+        </div>
+        <p class="boss-note" id="bossImageNote">ここは後から正式ボス画像に差し替えやすい仮ビジュアル領域です。</p>
+      </article>
+
+      <article class="glass boss-state">
+        <div class="status-head">
+          <div>
+            <p class="panel-label">Traveler Status</p>
+            <h3 id="playerBattleTitle">月下の新人</h3>
+            <p class="subtle" id="playerBattleLevel">Lv1</p>
+          </div>
+          <a class="button button-secondary" href="index.html">育成画面に戻る</a>
+        </div>
+
+        <div class="status-mini-grid">
+          <div>
+            <span>HP</span>
+            <strong id="playerStatHp">0</strong>
+          </div>
+          <div>
+            <span>攻撃力</span>
+            <strong id="playerStatAttack">0</strong>
+          </div>
+          <div>
+            <span>防御力</span>
+            <strong id="playerStatDefense">0</strong>
+          </div>
+          <div>
+            <span>素早さ</span>
+            <strong id="playerStatSpeed">0</strong>
+          </div>
+          <div>
+            <span>運</span>
+            <strong id="playerStatLuck">0</strong>
+          </div>
+          <div>
+            <span>所持アイテム総数</span>
+            <strong id="itemTotal">0</strong>
+          </div>
+        </div>
+
+        <ul class="battle-info-list">
+          <li>通常攻撃: 能力値に応じた標準行動です。</li>
+          <li>防御: そのターンの被ダメージを軽減します。</li>
+          <li>アイテム: 所持数があるものだけ使用できます。</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="shell section battle-layout">
+      <article class="glass battle-control-panel">
+        <div class="battle-head">
+          <div>
+            <p class="panel-label">Battle Status</p>
+            <h3>ターン制バトル</h3>
+          </div>
+          <p class="subtle" id="turnLabel">Turn 1</p>
+        </div>
+
+        <div class="battle-gauges">
+          <div class="gauge-card">
+            <div class="gauge-value">
+              <strong>プレイヤーHP</strong>
+              <span id="playerHpValue">0 / 0</span>
+            </div>
+            <div class="gauge-track"><span class="gauge-fill" id="playerHpFill"></span></div>
+          </div>
+          <div class="gauge-card">
+            <div class="gauge-value">
+              <strong>ボスHP</strong>
+              <span id="bossHpValue">0 / 0</span>
+            </div>
+            <div class="gauge-track"><span class="gauge-fill" id="bossHpFill"></span></div>
+          </div>
+        </div>
+
+        <div class="battle-actions">
+          <button class="button button-primary" id="attackButton" type="button">攻撃</button>
+          <button class="button button-secondary" id="guardButton" type="button">防御</button>
+          <button class="button button-ghost" id="focusButton" type="button">集中</button>
+        </div>
+
+        <div>
+          <p class="panel-label">Items</p>
+          <div class="battle-items" id="battleItems"></div>
+        </div>
+
+        <div class="glass battle-announcement" id="battleAnnouncement">
+          <p class="panel-label">Result</p>
+          <h2 id="announcementTitle">深層への扉は開いています。</h2>
+          <p id="announcementText">行動を選ぶと戦闘が始まります。戦闘ログで経過を確認できます。</p>
+          <div class="result-actions">
+            <a class="button button-secondary" href="index.html">メインページへ戻る</a>
+            <button class="button button-primary" id="restartButton" type="button">戦闘をやり直す</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="glass battle-log-panel">
+        <div class="panel-heading-row">
+          <div>
+            <p class="panel-label">Battle Log</p>
+            <h3>戦闘ログ</h3>
+          </div>
+          <p class="subtle">何が起きたかを逐次表示します</p>
+        </div>
+        <div class="battle-log" id="battleLog"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="boss.js"></script>
+</body>
+</html>
