@@ -803,24 +803,28 @@ button {
 .boss-visual {
   position: relative;
   width: min(100%, 420px);
-  aspect-ratio: 1;
+  min-height: 420px;
   margin: 34px auto 0;
+  padding: 22px;
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
     radial-gradient(circle at 50% 38%, rgba(255, 143, 151, 0.16), transparent 25%),
     linear-gradient(180deg, rgba(18, 22, 42, 0.98), rgba(6, 9, 20, 0.96));
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .boss-visual-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  padding: 18px;
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   opacity: 0.96;
   filter: saturate(1.02) contrast(1.04) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.28));
 }
@@ -833,6 +837,7 @@ button {
   clip-path: polygon(50% 0%, 72% 16%, 82% 40%, 74% 66%, 84% 100%, 50% 84%, 16% 100%, 26% 66%, 18% 40%, 28% 16%);
   filter: drop-shadow(0 0 24px rgba(255, 143, 151, 0.28));
   mix-blend-mode: screen;
+  z-index: 0;
 }
 
 .boss-visual::after {
@@ -841,6 +846,7 @@ button {
   inset: 6%;
   border: 1px dashed rgba(255, 255, 255, 0.08);
   border-radius: 22px;
+  z-index: 2;
 }
 
 .boss-visual-label {
@@ -853,6 +859,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.78rem;
   letter-spacing: 0.14em;
+  z-index: 3;
 }
 
 .battle-layout {
