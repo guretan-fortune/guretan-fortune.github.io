@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="育成した旅人で最終ボスに挑戦するターン制バトルページ。">
+  <meta name="description" content="育成した旅人で地下階層ボスに挑むターン制バトルページ。">
   <title>ボスバトル | Fate Grow Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
       <span class="brand-mark">FG</span>
       <span>
         <strong>Fate Grow Archive</strong>
-        <small>深層試練 / Boss Battle</small>
+        <small>地下階層ボスバトル</small>
       </span>
     </a>
     <nav class="site-nav" aria-label="ページ遷移">
@@ -36,14 +36,14 @@
   <main>
     <section class="shell section boss-hero">
       <article class="glass boss-figure">
-        <p class="eyebrow">Final Encounter</p>
-        <h2 id="bossName">終末星喰 アストラル・デヴォア</h2>
-        <p id="bossDescription">育成した者だけを試す深層の守護者。準備不足なら押し切られ、鍛え上げていれば突破できる相手です。</p>
+        <p class="eyebrow" id="bossFloorTag">Basement 1</p>
+        <h2 id="bossName">地下1階 星塵の門番</h2>
+        <p id="bossDescription">地下への入口を守る観測兵。まだ浅い層だが、油断した旅人を払い落とします。</p>
         <div class="boss-visual" id="bossVisual">
           <img class="boss-visual-image" src="Content/%E7%B5%82%E6%9C%AB%E6%98%9F%E5%96%B0%20%E3%82%A2%E3%82%B9%E3%83%88%E3%83%A9%E3%83%AB%E3%83%BB%E3%83%87%E3%83%B4%E3%82%A9%E3%82%A2.png" alt="ボス画像">
-          <span class="boss-visual-label" id="bossVisualLabel">ASTRAL DEVOURER</span>
+          <span class="boss-visual-label" id="bossVisualLabel">FLOOR 01</span>
         </div>
-        <p class="boss-note" id="bossImageNote">ここは後から正式ボス画像に差し替えやすい仮ビジュアル領域です。</p>
+        <p class="boss-note" id="bossImageNote">地下の奥へ進むほど、敵は重く、速く、危険になります。</p>
       </article>
 
       <article class="glass boss-state">
@@ -57,36 +57,18 @@
         </div>
 
         <div class="status-mini-grid">
-          <div>
-            <span>HP</span>
-            <strong id="playerStatHp">0</strong>
-          </div>
-          <div>
-            <span>攻撃力</span>
-            <strong id="playerStatAttack">0</strong>
-          </div>
-          <div>
-            <span>防御力</span>
-            <strong id="playerStatDefense">0</strong>
-          </div>
-          <div>
-            <span>素早さ</span>
-            <strong id="playerStatSpeed">0</strong>
-          </div>
-          <div>
-            <span>運</span>
-            <strong id="playerStatLuck">0</strong>
-          </div>
-          <div>
-            <span>所持アイテム総数</span>
-            <strong id="itemTotal">0</strong>
-          </div>
+          <div><span>HP</span><strong id="playerStatHp">0</strong></div>
+          <div><span>攻撃力</span><strong id="playerStatAttack">0</strong></div>
+          <div><span>防御力</span><strong id="playerStatDefense">0</strong></div>
+          <div><span>素早さ</span><strong id="playerStatSpeed">0</strong></div>
+          <div><span>運</span><strong id="playerStatLuck">0</strong></div>
+          <div><span>所持 ocoin</span><strong id="coinTotal">0</strong></div>
         </div>
 
         <ul class="battle-info-list">
           <li>通常攻撃: 能力値に応じた標準行動です。</li>
           <li>防御: そのターンの被ダメージを軽減します。</li>
-          <li>アイテム: 所持数があるものだけ使用できます。</li>
+          <li>集中: 次の攻撃の会心率を大きく上げます。</li>
         </ul>
       </article>
     </section>
@@ -103,17 +85,11 @@
 
         <div class="battle-gauges">
           <div class="gauge-card">
-            <div class="gauge-value">
-              <strong>プレイヤーHP</strong>
-              <span id="playerHpValue">0 / 0</span>
-            </div>
+            <div class="gauge-value"><strong>プレイヤーHP</strong><span id="playerHpValue">0 / 0</span></div>
             <div class="gauge-track"><span class="gauge-fill" id="playerHpFill"></span></div>
           </div>
           <div class="gauge-card">
-            <div class="gauge-value">
-              <strong>ボスHP</strong>
-              <span id="bossHpValue">0 / 0</span>
-            </div>
+            <div class="gauge-value"><strong>ボスHP</strong><span id="bossHpValue">0 / 0</span></div>
             <div class="gauge-track"><span class="gauge-fill" id="bossHpFill"></span></div>
           </div>
         </div>
@@ -131,8 +107,8 @@
 
         <div class="glass battle-announcement" id="battleAnnouncement">
           <p class="panel-label">Result</p>
-          <h2 id="announcementTitle">深層への扉は開いています。</h2>
-          <p id="announcementText">行動を選ぶと戦闘が始まります。戦闘ログで経過を確認できます。</p>
+          <h2 id="announcementTitle">地下への扉は開いています。</h2>
+          <p id="announcementText">行動を選ぶと戦闘が始まります。勝てば ocoin を得て、次の階層が解放されます。</p>
           <div class="result-actions">
             <a class="button button-secondary" href="index.html">メインページへ戻る</a>
             <button class="button button-primary" id="restartButton" type="button">戦闘をやり直す</button>
@@ -146,7 +122,7 @@
             <p class="panel-label">Battle Log</p>
             <h3>戦闘ログ</h3>
           </div>
-          <p class="subtle">何が起きたかを逐次表示します</p>
+          <p class="subtle">行動と結果を逐次表示します</p>
         </div>
         <div class="battle-log" id="battleLog"></div>
       </article>

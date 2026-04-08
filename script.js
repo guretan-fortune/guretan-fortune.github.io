@@ -1,10 +1,10 @@
 (function () {
   const byId = (id) => document.getElementById(id);
-  const particleField = byId("particleField");
 
-  const homeNodes = {
-    todayDate: byId("todayDate"),
+  const nodes = {
+    particleField: byId("particleField"),
     ritualTrigger: byId("ritualTrigger"),
+    todayDate: byId("todayDate"),
     drawStatusTitle: byId("drawStatusTitle"),
     drawCard: byId("drawCard"),
     drawRarity: byId("drawRarity"),
@@ -12,6 +12,7 @@
     drawDescription: byId("drawDescription"),
     statEcho: byId("statEcho"),
     drawButton: byId("drawButton"),
+    ticketButton: byId("ticketButton"),
     resultTag: byId("resultTag"),
     resultHeadline: byId("resultHeadline"),
     resultEffects: byId("resultEffects"),
@@ -37,58 +38,40 @@
     collectionMeta: byId("collectionMeta"),
     inventoryList: byId("inventoryList"),
     cardCollection: byId("cardCollection"),
-    worldPhaseTitle: byId("worldPhaseTitle"),
     worldPhaseDescription: byId("worldPhaseDescription"),
-    nextMilestone: byId("nextMilestone"),
+    currentFloorLabel: byId("currentFloorLabel"),
     worldProgressText: byId("worldProgressText"),
     bossAdvice: byId("bossAdvice"),
+    nextMilestone: byId("nextMilestone"),
+    ocoinValue: byId("ocoinValue"),
+    shopCoinValue: byId("shopCoinValue"),
+    weaponLevel: byId("weaponLevel"),
+    armorLevel: byId("armorLevel"),
+    shopGrid: byId("shopGrid"),
+    bossProgressSummary: byId("bossProgressSummary"),
     toast: byId("toast"),
   };
 
-  const dateKey = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  };
-
+  const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   const today = new Date();
   const todayKey = dateKey(today);
-
-  const daysBetween = (from, to) => {
-    const start = new Date(`${from}T00:00:00`);
-    const end = new Date(`${to}T00:00:00`);
-    return Math.round((end - start) / 86400000);
-  };
-
   const experienceToNext = (level) => 12 + (level - 1) * 6;
-
-  const titleForLevel = (level) => {
-    if (level >= 15) return "終端星界の継承者";
-    if (level >= 12) return "運命深層の観測者";
-    if (level >= 9) return "月輪を越えた旅人";
-    if (level >= 6) return "運命を鍛える巡礼者";
-    if (level >= 3) return "星灯を継ぐ旅人";
-    return "月下の新人";
-  };
-
-  const getWorldPhase = (state) => {
-    if (state.progress.totalCards >= 24 || state.player.level >= 12) return WORLD_PHASES[3];
-    if (state.progress.totalCards >= 16 || state.player.level >= 8) return WORLD_PHASES[2];
-    if (state.progress.totalCards >= 8 || state.player.level >= 4) return WORLD_PHASES[1];
-    return WORLD_PHASES[0];
-  };
+  const daysBetween = (from, to) => Math.round((new Date(`${to}T00:00:00`) - new Date(`${from}T00:00:00`)) / 86400000);
 
   const createDefaultState = () => ({
     player: JSON.parse(JSON.stringify(INITIAL_PLAYER)),
     collection: [],
     cardHistory: [],
-    items: {
-      potion: 1,
-      power_tonic: 0,
-      ward_talisman: 0,
-      crit_charm: 0,
-      regen_drop: 0,
+    items: Object.values(ITEM_DEFS).reduce((acc, item) => {
+      acc[item.id] = item.id === "potion" ? 1 : 0;
+      return acc;
+    }, {}),
+    economy: {
+      ocoin: 0,
+      equipment: {
+        weapon: 0,
+        armor: 0,
+      },
     },
     progress: {
       totalVisits: 0,
@@ -97,6 +80,8 @@
       totalCards: 0,
       bossClears: 0,
       bossLastResult: null,
+      currentFloor: 1,
+      highestUnlockedFloor: 1,
     },
     daily: {
       lastDrawDate: null,
@@ -105,6 +90,8 @@
       extraDrawDate: null,
       extraDrawsAvailable: 0,
       hiddenTapCount: 0,
+      ticketDrawDate: null,
+      ticketDrawsUsed: 0,
     },
   });
 
@@ -121,71 +108,97 @@
           ...((loaded.player && loaded.player.stats) || {}),
         },
       },
+      items: { ...base.items, ...(loaded.items || {}) },
+      economy: {
+        ...base.economy,
+        ...(loaded.economy || {}),
+        equipment: {
+          ...base.economy.equipment,
+          ...((loaded.economy && loaded.economy.equipment) || {}),
+        },
+      },
+      progress: { ...base.progress, ...(loaded.progress || {}) },
+      daily: { ...base.daily, ...(loaded.daily || {}) },
       collection: Array.isArray(loaded.collection) ? loaded.collection : [],
       cardHistory: Array.isArray(loaded.cardHistory) ? loaded.cardHistory : [],
-      items: {
-        ...base.items,
-        ...(loaded.items || {}),
-      },
-      progress: {
-        ...base.progress,
-        ...(loaded.progress || {}),
-      },
-      daily: {
-        ...base.daily,
-        ...(loaded.daily || {}),
-      },
     };
   };
 
   const loadState = () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return createDefaultState();
-      return mergeState(JSON.parse(raw));
+      return raw ? mergeState(JSON.parse(raw)) : createDefaultState();
     } catch {
       return createDefaultState();
     }
   };
 
-  const saveState = (state) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const state = loadState();
+  const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  const getEquipmentBonuses = () => ({
+    hp: state.economy.equipment.armor * 12,
+    attack: state.economy.equipment.weapon * 6,
+    defense: state.economy.equipment.armor * 6,
+    speed: 0,
+    luck: 0,
+  });
+
+  const getEffectiveStats = () => {
+    const bonus = getEquipmentBonuses();
+    return Object.keys(state.player.stats).reduce((acc, key) => {
+      acc[key] = state.player.stats[key] + (bonus[key] || 0);
+      return acc;
+    }, {});
   };
 
-  const state = loadState();
+  const getCurrentBoss = () => BOSSES.find((boss) => boss.floor === state.progress.currentFloor) || BOSSES[BOSSES.length - 1];
 
-  const syncDailySecrets = () => {
+  const titleForLevel = (level) => {
+    if (level >= 20) return "地下終端の継承者";
+    if (level >= 15) return "深層運命の観測者";
+    if (level >= 10) return "月輪を越えた旅人";
+    if (level >= 6) return "運命を鍛える巡礼者";
+    if (level >= 3) return "星灯を継ぐ旅人";
+    return "月下の新人";
+  };
+
+  const getWorldPhase = () => {
+    if (state.progress.currentFloor >= 8 || state.player.level >= 14) return WORLD_PHASES[3];
+    if (state.progress.currentFloor >= 5 || state.player.level >= 9) return WORLD_PHASES[2];
+    if (state.progress.currentFloor >= 3 || state.player.level >= 5) return WORLD_PHASES[1];
+    return WORLD_PHASES[0];
+  };
+
+  const syncDaily = () => {
     if (state.daily.extraDrawDate !== todayKey) {
       state.daily.extraDrawDate = todayKey;
       state.daily.extraDrawsAvailable = 0;
       state.daily.hiddenTapCount = 0;
+    }
+    if (state.daily.ticketDrawDate !== todayKey) {
+      state.daily.ticketDrawDate = todayKey;
+      state.daily.ticketDrawsUsed = 0;
     }
   };
 
   const registerVisit = () => {
     const last = state.progress.lastVisitDate;
     if (last === todayKey) return;
-
     state.progress.totalVisits += 1;
-    if (!last) {
-      state.progress.visitStreak = 1;
-    } else {
-      state.progress.visitStreak = daysBetween(last, todayKey) === 1 ? state.progress.visitStreak + 1 : 1;
-    }
-
+    state.progress.visitStreak = !last ? 1 : (daysBetween(last, todayKey) === 1 ? state.progress.visitStreak + 1 : 1);
     state.progress.lastVisitDate = todayKey;
-
-    if (state.progress.visitStreak > 0 && state.progress.visitStreak % 7 === 0) {
-      state.items.regen_drop += 1;
-    }
+    if (state.progress.visitStreak > 0 && state.progress.visitStreak % 7 === 0) state.items.regen_drop += 1;
   };
 
   registerVisit();
-  syncDailySecrets();
+  syncDaily();
 
-  const canDrawToday = () => {
-    if (state.daily.lastDrawDate !== todayKey) return true;
-    return state.daily.extraDrawsAvailable > 0;
+  const toast = (message) => {
+    nodes.toast.textContent = message;
+    nodes.toast.classList.add("is-visible");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => nodes.toast.classList.remove("is-visible"), 2200);
   };
 
   const weightedRandomRarity = () => {
@@ -196,7 +209,6 @@
       Epic: RARITY_META.Epic.rate + streakBonus * 0.35,
       Legendary: RARITY_META.Legendary.rate + streakBonus * 0.15,
     };
-
     const roll = Math.random();
     let cursor = 0;
     for (const key of ["Common", "Rare", "Epic", "Legendary"]) {
@@ -207,26 +219,14 @@
   };
 
   const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-  const cloneEffects = (effects) => Object.entries(effects).reduce((acc, [key, value]) => {
-    acc[key] = value;
-    return acc;
-  }, {});
-
   const pickCard = () => {
     const rarity = weightedRandomRarity();
     const pool = CARD_LIBRARY.filter((card) => card.rarity === rarity);
     return pool[randInt(0, pool.length - 1)];
   };
 
-  const ensureCollectionCard = (cardId) => {
-    if (!state.collection.includes(cardId)) state.collection.push(cardId);
-  };
-
-  const addItem = (itemId, amount = 1) => {
-    if (!itemId) return;
-    state.items[itemId] = (state.items[itemId] || 0) + amount;
-  };
+  const canDailyDraw = () => state.daily.lastDrawDate !== todayKey || state.daily.extraDrawsAvailable > 0;
+  const canTicketDraw = () => (state.items.card_ticket || 0) > 0;
 
   const applyLevelUps = () => {
     let leveled = 0;
@@ -244,7 +244,7 @@
     return leveled;
   };
 
-  const applyCardGrowth = (card) => {
+  const applyCardGrowth = (card, source) => {
     const rarity = RARITY_META[card.rarity];
     const applied = [];
     let totalGrowth = 0;
@@ -259,276 +259,262 @@
     state.player.exp += rarity.exp + Math.floor(totalGrowth / 2);
     state.player.totalGrowth += totalGrowth;
     state.progress.totalCards += 1;
-    ensureCollectionCard(card.id);
-    if (card.itemReward) addItem(card.itemReward, 1);
+    if (!state.collection.includes(card.id)) state.collection.push(card.id);
+    if (card.itemReward) state.items[card.itemReward] += 1;
 
     const bonusRoll = Math.random();
-    if (bonusRoll < 0.12) addItem("potion", 1);
-    if (state.progress.visitStreak >= 3 && bonusRoll > 0.82 && bonusRoll < 0.92) addItem("power_tonic", 1);
+    if (bonusRoll < 0.12) state.items.potion += 1;
+    if (state.progress.visitStreak >= 3 && bonusRoll > 0.82 && bonusRoll < 0.92) state.items.power_tonic += 1;
 
     const levelUps = applyLevelUps();
+    if (source === "daily" && state.daily.lastDrawDate === todayKey && state.daily.extraDrawsAvailable > 0) state.daily.extraDrawsAvailable -= 1;
+    if (source === "ticket") {
+      state.items.card_ticket -= 1;
+      state.daily.ticketDrawsUsed += 1;
+    }
 
     const result = {
       cardId: card.id,
       rarity: card.rarity,
-      effects: cloneEffects(card.statEffects),
       applied,
       itemReward: card.itemReward || null,
       levelUps,
+      source,
       drawnAt: todayKey,
     };
 
-    if (state.daily.lastDrawDate === todayKey && state.daily.extraDrawsAvailable > 0) {
-      state.daily.extraDrawsAvailable -= 1;
-    }
-
-    state.daily.lastDrawDate = todayKey;
+    if (source === "daily") state.daily.lastDrawDate = todayKey;
     state.daily.lastCardId = card.id;
     state.daily.lastResult = result;
     state.cardHistory.unshift(result);
     state.cardHistory = state.cardHistory.slice(0, 60);
-
-    saveState(state);
+    saveState();
     return result;
   };
 
-  const getLastCard = () => CARD_LIBRARY.find((card) => card.id === state.daily.lastCardId) || null;
-
-  const toast = (message) => {
-    if (!homeNodes.toast) return;
-    homeNodes.toast.textContent = message;
-    homeNodes.toast.classList.add("is-visible");
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => {
-      homeNodes.toast.classList.remove("is-visible");
-    }, 2200);
-  };
-
   const setCardView = (card, result) => {
-    const rarityMeta = card ? RARITY_META[card.rarity] : null;
-    const drawCard = homeNodes.drawCard;
-    drawCard.className = "draw-card";
-    if (card) {
-      drawCard.classList.add(`rarity-${rarityMeta.className}`);
-    } else {
-      drawCard.classList.add("is-idle");
-    }
+    nodes.drawCard.className = "draw-card";
+    if (card) nodes.drawCard.classList.add(`rarity-${RARITY_META[card.rarity].className}`);
+    else nodes.drawCard.classList.add("is-idle");
 
-    homeNodes.drawRarity.textContent = card ? card.rarity : "FATE";
-    homeNodes.drawName.textContent = card ? card.name : "封じられた運命札";
-    homeNodes.drawDescription.textContent = card
-      ? card.description
-      : "まだ何も引かれていません。儀式を始めると、今日の一枚が姿を見せます。";
-
-    const stats = result && result.applied.length
+    nodes.drawRarity.textContent = card ? card.rarity : "FATE";
+    nodes.drawName.textContent = card ? card.name : "封じられた運命札";
+    nodes.drawDescription.textContent = card ? card.description : "儀式を始めると、今日の一枚がここに姿を見せます。";
+    nodes.statEcho.innerHTML = result && result.applied.length
       ? result.applied.map((entry) => `<span>${STAT_LABELS[entry.stat]} +${entry.delta}</span>`).join("")
       : "<span>HP ???</span><span>ATK ???</span><span>DEF ???</span><span>SPD ???</span><span>LUK ???</span>";
-
-    homeNodes.statEcho.innerHTML = stats;
   };
 
   const setResultView = (card, result) => {
     if (!card || !result) {
-      homeNodes.resultTag.textContent = "Awaiting Fate";
-      homeNodes.resultHeadline.textContent = "カードを引くと、ここに今日の成長結果が表示されます。";
-      homeNodes.resultEffects.innerHTML = "";
-      homeNodes.resultItem.textContent = "アイテム報酬はまだありません。";
+      nodes.resultTag.textContent = "Awaiting Fate";
+      nodes.resultHeadline.textContent = "カードを引くと、ここに成長結果が表示されます。";
+      nodes.resultEffects.innerHTML = "";
+      nodes.resultItem.textContent = "アイテム報酬はまだありません。";
       return;
     }
-
-    homeNodes.resultTag.textContent = `${card.rarity} Draw`;
-    homeNodes.resultHeadline.textContent = `${card.name} を獲得。旅人が確かに強くなりました。`;
-    homeNodes.resultEffects.innerHTML = result.applied
-      .map((entry) => `<span class="delta-pill">${STAT_LABELS[entry.stat]} +${entry.delta}</span>`)
-      .join("");
-
-    const itemText = result.itemReward
-      ? `${ITEM_DEFS[result.itemReward].name} を1個獲得しました。`
-      : "今回はカードの成長のみです。";
-
-    homeNodes.resultItem.textContent = result.levelUps > 0
-      ? `${itemText} Lvが${result.levelUps}上がりました。`
-      : itemText;
+    nodes.resultTag.textContent = `${card.rarity} Draw`;
+    nodes.resultHeadline.textContent = `${card.name} を獲得。旅人の運命が前進しました。`;
+    nodes.resultEffects.innerHTML = result.applied.map((entry) => `<span class="delta-pill">${STAT_LABELS[entry.stat]} +${entry.delta}</span>`).join("");
+    const itemText = result.itemReward ? `${ITEM_DEFS[result.itemReward].name} を1個獲得。` : "今回はカード成長のみです。";
+    const sourceText = result.source === "ticket" ? "カードチケットを使って追加抽選しました。" : "";
+    nodes.resultItem.textContent = `${itemText}${result.levelUps > 0 ? ` Lvが${result.levelUps}上がりました。` : ""}${sourceText}`;
   };
 
   const renderStats = () => {
-    homeNodes.statsList.innerHTML = Object.entries(state.player.stats)
-      .map(([key, value]) => {
-        const percentage = Math.min(100, Math.round((value / 180) * 100));
-        return `
-          <div class="stat-row">
-            <strong>${STAT_LABELS[key]}</strong>
-            <div class="gauge-track"><span class="gauge-fill" style="width:${percentage}%"></span></div>
-            <span>${value}</span>
-          </div>
-        `;
-      })
-      .join("");
+    const effective = getEffectiveStats();
+    const base = state.player.stats;
+    nodes.statsList.innerHTML = Object.entries(effective).map(([key, value]) => {
+      const percentage = Math.min(100, Math.round((value / 220) * 100));
+      const bonus = value - base[key];
+      return `
+        <div class="stat-row">
+          <strong>${STAT_LABELS[key]}</strong>
+          <div class="gauge-track"><span class="gauge-fill" style="width:${percentage}%"></span></div>
+          <span>${value}${bonus > 0 ? ` (+${bonus})` : ""}</span>
+        </div>
+      `;
+    }).join("");
   };
 
   const renderInventory = () => {
-    homeNodes.inventoryList.innerHTML = Object.values(ITEM_DEFS)
-      .map((item) => `
-        <article class="inventory-item">
-          <div class="panel-heading-row">
-            <div>
-              <h4>${item.name}</h4>
-              <p class="card-copy">${item.description}</p>
-            </div>
-            <strong>x${state.items[item.id] || 0}</strong>
+    nodes.inventoryList.innerHTML = Object.values(ITEM_DEFS).map((item) => `
+      <article class="inventory-item">
+        <div class="panel-heading-row">
+          <div>
+            <h4>${item.name}</h4>
+            <p class="card-copy">${item.description}</p>
           </div>
-        </article>
-      `)
-      .join("");
+          <strong>x${state.items[item.id] || 0}</strong>
+        </div>
+      </article>
+    `).join("");
   };
 
   const renderCollection = () => {
-    homeNodes.collectionMeta.textContent = `${state.collection.length} / ${CARD_LIBRARY.length}`;
-    homeNodes.cardCollection.innerHTML = CARD_LIBRARY.map((card) => {
+    nodes.collectionMeta.textContent = `${state.collection.length} / ${CARD_LIBRARY.length}`;
+    nodes.cardCollection.innerHTML = CARD_LIBRARY.map((card) => {
       const owned = state.collection.includes(card.id);
       return `
         <article class="card-tile ${owned ? "" : "locked"}">
           <p class="card-meta">${card.rarity}</p>
           <h4>${owned ? card.name : "未知のカード"}</h4>
-          <p class="card-copy">${owned ? card.description : "まだ記録されていません。毎日の儀式で発見できます。"}</p>
+          <p class="card-copy">${owned ? card.description : "まだ記録されていません。毎日の儀式で見つかります。"}</p>
           <p class="subtle">${owned ? Object.keys(card.statEffects).map((stat) => STAT_LABELS[stat]).join(" / ") : "???"}</p>
         </article>
       `;
     }).join("");
   };
 
+  const buyShopItem = (shopId) => {
+    const item = SHOP_ITEMS.find((entry) => entry.id === shopId);
+    if (!item) return;
+    if (state.economy.ocoin < item.price) {
+      toast("ocoin が足りません。");
+      return;
+    }
+    state.economy.ocoin -= item.price;
+    if (item.type === "item") state.items[item.target] += 1;
+    if (item.type === "equipment") state.economy.equipment[item.target] += 1;
+    saveState();
+    renderAll();
+    toast(`${item.name} を購入しました。`);
+  };
+
+  const renderShop = () => {
+    nodes.shopCoinValue.textContent = state.economy.ocoin;
+    nodes.shopGrid.innerHTML = SHOP_ITEMS.map((item) => `
+      <article class="glass shop-card">
+        <p class="panel-label">Shop Item</p>
+        <h3>${item.name}</h3>
+        <p class="card-copy">${item.description}</p>
+        <p class="shop-price">${item.price} ocoin</p>
+        <button class="button button-primary button-wide" data-shop-id="${item.id}" type="button" ${state.economy.ocoin >= item.price ? "" : "disabled"}>購入する</button>
+      </article>
+    `).join("");
+    nodes.shopGrid.querySelectorAll("[data-shop-id]").forEach((button) => {
+      button.addEventListener("click", () => buyShopItem(button.dataset.shopId));
+    });
+  };
+
+  const updateButtons = () => {
+    nodes.drawButton.disabled = false;
+    nodes.drawButton.textContent = canDailyDraw()
+      ? state.daily.lastDrawDate === todayKey && state.daily.extraDrawsAvailable > 0
+        ? `隠し解放でもう一度引く (${state.daily.extraDrawsAvailable})`
+        : "今日のカードを引く"
+      : "今日はすでに引きました";
+    nodes.ticketButton.disabled = !canTicketDraw();
+    nodes.ticketButton.textContent = `カードチケットを使う (${state.items.card_ticket || 0})`;
+  };
+
   const renderOverview = () => {
+    const phase = getWorldPhase();
+    const effective = getEffectiveStats();
     const nextNeed = experienceToNext(state.player.level);
     const xpPercent = Math.min(100, Math.round((state.player.exp / nextNeed) * 100));
-    const phase = getWorldPhase(state);
+    const boss = getCurrentBoss();
     const collectionRate = Math.round((state.collection.length / CARD_LIBRARY.length) * 100);
 
-    homeNodes.todayDate.textContent = today.toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    nodes.todayDate.textContent = today.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+    nodes.drawStatusTitle.textContent = canDailyDraw()
+      ? state.daily.lastDrawDate === todayKey && state.daily.extraDrawsAvailable > 0
+        ? `隠された余光が残っています。あと${state.daily.extraDrawsAvailable}回、追加で引けます。`
+        : "まだ今日の運命は開かれていません。"
+      : "今日の運命はすでに開かれています。チケットか明日の儀式を待ちましょう。";
 
-    homeNodes.drawStatusTitle.textContent = state.daily.lastDrawDate === todayKey
-      ? state.daily.extraDrawsAvailable > 0
-        ? `隠された余光が残っています。あと${state.daily.extraDrawsAvailable}回、もう一度引けます。`
-        : "今日の運命はすでに開かれています。明日また新しい一枚を。"
-      : "まだ今日の運命は開かれていません。";
+    nodes.playerTitle.textContent = state.player.title;
+    nodes.playerName.textContent = state.player.name;
+    nodes.playerLevel.textContent = state.player.level;
+    nodes.xpFill.style.width = `${xpPercent}%`;
+    nodes.xpValue.textContent = `${state.player.exp} EXP`;
+    nodes.xpNext.textContent = `次のLvまで ${Math.max(nextNeed - state.player.exp, 0)}`;
+    nodes.totalGrowth.textContent = state.player.totalGrowth;
+    nodes.totalVisits.textContent = `${state.progress.totalVisits}日`;
+    nodes.visitStreak.textContent = `${state.progress.visitStreak}日`;
+    nodes.streakDays.textContent = state.progress.visitStreak;
+    nodes.bossStatus.textContent = `${state.progress.bossClears}体撃破 / 地下${state.progress.currentFloor}階`;
+    nodes.phaseName.textContent = phase.title;
+    nodes.phaseIndex.textContent = `Phase ${phase.phase} / ${WORLD_PHASES.length}`;
+    nodes.phaseDetail.textContent = phase.description;
+    nodes.phaseFill.style.width = `${Math.max((phase.phase / WORLD_PHASES.length) * 100, 10)}%`;
+    nodes.totalCards.textContent = `${state.progress.totalCards}枚`;
+    nodes.collectionRate.textContent = `${collectionRate}%`;
+    nodes.worldPhaseDescription.textContent = phase.description;
+    nodes.currentFloorLabel.textContent = `地下${boss.floor}階 解放中`;
+    nodes.worldProgressText.textContent = `現在の挑戦先は地下${boss.floor}階「${boss.title}」。累計撃破数 ${state.progress.bossClears}。`;
+    nodes.bossAdvice.textContent = `次の敵は「${boss.title}」。報酬は ${boss.reward} ocoin。`;
+    nodes.nextMilestone.textContent = state.progress.currentFloor >= 10 ? "地下10階を制覇する" : `地下${Math.min(state.progress.currentFloor + 1, 10)}階を解放する`;
+    nodes.ocoinValue.textContent = `${state.economy.ocoin} ocoin`;
+    nodes.shopCoinValue.textContent = state.economy.ocoin;
+    nodes.weaponLevel.textContent = `${state.economy.equipment.weapon}`;
+    nodes.armorLevel.textContent = `${state.economy.equipment.armor}`;
+    nodes.bossProgressSummary.textContent = state.progress.currentFloor >= 10
+      ? "地下10階のラスボスが待っています。装備とアイテムを整えて最後の戦いへ。"
+      : `地下${state.progress.currentFloor}階が開放中です。勝利すれば次の地下階層が現れます。`;
 
-    homeNodes.playerTitle.textContent = state.player.title;
-    homeNodes.playerName.textContent = state.player.name;
-    homeNodes.playerLevel.textContent = state.player.level;
-    homeNodes.xpFill.style.width = `${xpPercent}%`;
-    homeNodes.xpValue.textContent = `${state.player.exp} EXP`;
-    homeNodes.xpNext.textContent = `次のLvまで ${Math.max(nextNeed - state.player.exp, 0)}`;
-    homeNodes.totalGrowth.textContent = state.player.totalGrowth;
-    homeNodes.totalVisits.textContent = `${state.progress.totalVisits}日`;
-    homeNodes.visitStreak.textContent = `${state.progress.visitStreak}日`;
-    homeNodes.streakDays.textContent = state.progress.visitStreak;
-    homeNodes.bossStatus.textContent = state.progress.bossClears > 0
-      ? `${state.progress.bossClears}回撃破`
-      : "未踏破";
-
-    homeNodes.phaseName.textContent = phase.title;
-    homeNodes.phaseIndex.textContent = `Phase ${phase.phase} / ${WORLD_PHASES.length}`;
-    homeNodes.phaseDetail.textContent = phase.description;
-    homeNodes.phaseFill.style.width = `${Math.max(phase.phase / WORLD_PHASES.length * 100, 8)}%`;
-    homeNodes.totalCards.textContent = `${state.progress.totalCards}枚`;
-    homeNodes.collectionRate.textContent = `${collectionRate}%`;
-    homeNodes.worldPhaseTitle.textContent = phase.title;
-    homeNodes.worldPhaseDescription.textContent = phase.description;
-    homeNodes.worldProgressText.textContent = `現在は「${phase.title}」。カード累計 ${state.progress.totalCards} 枚で世界が進行します。`;
-
-    const nextMilestone = state.player.level < 5 ? "Lv5 到達"
-      : state.player.level < 8 ? "Lv8 到達"
-      : state.player.level < 12 ? "Lv12 到達"
-      : "最終深層の踏破";
-    homeNodes.nextMilestone.textContent = nextMilestone;
-
-    homeNodes.bossAdvice.textContent = state.player.level >= 10
-      ? "かなり挑みやすい状態です。護符と回復薬があれば勝率が上がります。"
-      : state.player.level >= 6
-        ? "戦えますが油断は禁物です。防御札を持ち込むと安定します。"
-        : "まずは数日カードを重ね、HPと防御力を伸ばすのが安全です。";
-
-    const lastCard = getLastCard();
+    const lastCard = CARD_LIBRARY.find((card) => card.id === state.daily.lastCardId) || null;
     setCardView(lastCard, state.daily.lastResult);
     setResultView(lastCard, state.daily.lastResult);
     renderStats();
     renderInventory();
     renderCollection();
+    renderShop();
+    updateButtons();
   };
 
-  const performDraw = () => {
-    if (!canDrawToday()) {
+  const drawCard = (source) => {
+    if (source === "daily" && !canDailyDraw()) {
       toast("今日はすでにカードを引いています。");
       return;
     }
-
+    if (source === "ticket" && !canTicketDraw()) {
+      toast("カードチケットがありません。");
+      return;
+    }
     const card = pickCard();
-    homeNodes.drawCard.classList.remove("legendary-flare");
-    homeNodes.drawCard.classList.add("is-flipping");
+    nodes.drawCard.classList.remove("legendary-flare");
+    nodes.drawCard.classList.add("is-flipping");
 
-    window.setTimeout(() => {
-      const result = applyCardGrowth(card);
+    setTimeout(() => {
+      const result = applyCardGrowth(card, source);
       setCardView(card, result);
       setResultView(card, result);
       renderOverview();
-      renderButtonState();
-
-      if (card.rarity === "Legendary") {
-        homeNodes.drawCard.classList.add("legendary-flare");
-      }
-
-      toast(card.rarity === "Legendary" ? "Legendaryカード出現。" : `${card.name} を獲得。`);
-      homeNodes.drawCard.classList.remove("is-flipping");
+      if (card.rarity === "Legendary") nodes.drawCard.classList.add("legendary-flare");
+      nodes.drawCard.classList.remove("is-flipping");
+      toast(source === "ticket" ? `${card.name} を追加抽選で獲得。` : `${card.name} を獲得。`);
     }, 620);
   };
 
-  const renderButtonState = () => {
-    homeNodes.drawButton.disabled = false;
-    homeNodes.drawButton.textContent = canDrawToday()
-      ? state.daily.lastDrawDate === todayKey && state.daily.extraDrawsAvailable > 0
-        ? `隠し解放でもう一度引く (${state.daily.extraDrawsAvailable})`
-        : "今日のカードを引く"
-      : "今日はすでに引きました";
-  };
-
   const handleHiddenTrigger = () => {
-    syncDailySecrets();
+    syncDaily();
     state.daily.hiddenTapCount += 1;
-
     if (state.daily.hiddenTapCount % 5 === 0) {
       state.daily.extraDrawsAvailable += 1;
-      saveState(state);
-      renderButtonState();
+      saveState();
       renderOverview();
-      toast("隠し儀式が開きました。もう一度引けます。");
+      toast("隠し儀式が開きました。追加で1回引けます。");
       return;
     }
-
-    saveState(state);
+    saveState();
   };
 
   const createParticles = () => {
-    if (!particleField) return;
-    const total = 42;
     const stars = [];
-    for (let index = 0; index < total; index += 1) {
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      const delay = Math.random() * 6;
-      const duration = 4 + Math.random() * 6;
-      stars.push(`<span style="left:${left}%;top:${top}%;animation-delay:${delay}s;animation-duration:${duration}s"></span>`);
+    for (let index = 0; index < 42; index += 1) {
+      stars.push(`<span style="left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 6}s;animation-duration:${4 + Math.random() * 6}s"></span>`);
     }
-    particleField.innerHTML = stars.join("");
+    nodes.particleField.innerHTML = stars.join("");
   };
 
-  homeNodes.drawButton.addEventListener("click", performDraw);
-  homeNodes.ritualTrigger.addEventListener("click", handleHiddenTrigger);
+  const renderAll = () => renderOverview();
+
+  nodes.drawButton.addEventListener("click", () => drawCard("daily"));
+  nodes.ticketButton.addEventListener("click", () => drawCard("ticket"));
+  nodes.ritualTrigger.addEventListener("click", handleHiddenTrigger);
 
   createParticles();
-  renderButtonState();
-  renderOverview();
-  saveState(state);
+  renderAll();
+  saveState();
 })();

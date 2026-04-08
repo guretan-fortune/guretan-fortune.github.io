@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="毎日カードを引いてキャラクターを育て、収集と成長を経て最終ボスへ挑む運命育成RPGサイト。">
+  <meta name="description" content="毎日カードを引いて育成し、地下深層のボスへ挑む運命育成RPGサイト。">
   <title>運命育成録 | Fate Grow Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,14 +25,14 @@
       <span class="brand-mark">FG</span>
       <span>
         <strong>Fate Grow Archive</strong>
-        <small>運命を引き、育て、深層へ進む個人RPGサイト</small>
+        <small>毎日の運命が地下10階のラスボスへ続く、体験型個人サイト</small>
       </span>
     </a>
     <nav class="site-nav" aria-label="メインナビゲーション">
       <a href="#ritual">今日のカード</a>
       <a href="#status">育成状況</a>
       <a href="#collection">収集庫</a>
-      <a href="#about">案内</a>
+      <a href="#shop">ショップ</a>
       <a class="nav-boss-link" href="boss.html">ボス挑戦</a>
     </nav>
   </header>
@@ -40,33 +40,34 @@
   <main id="top">
     <section class="hero shell section">
       <div class="hero-copy">
-        <p class="eyebrow">Daily Fate Draw / Growth RPG / Personal World Archive</p>
-        <h1>毎日一枚の運命が、<br>あなたの旅人をボス戦へ近づける。</h1>
+        <p class="eyebrow">Daily Fate Draw / Growth RPG / Basement Boss Progression</p>
+        <h1>毎日一枚の運命が、<br>地下10階の終末へ続いていく。</h1>
         <p class="hero-lead">
-          このサイトは、星と月の記録を集めて育つ運命育成録です。毎日1回だけ引けるカードが能力値を押し上げ、
-          稀に秘薬や護符も落ちます。積み重ねた成長は、そのまま深層のボスバトルで試されます。
+          カードを引いて旅人を育て、アイテムを集め、地下深層へ潜る運命育成RPGサイトです。
+          育成結果はそのままボス戦に反映され、勝てば `ocoin` を獲得。集めた `ocoin` はショップで
+          カードチケットや装備へ変えられます。
         </p>
         <div class="hero-actions">
           <a class="button button-primary" href="#ritual">今日のカードを引く</a>
-          <a class="button button-secondary" href="boss.html">ボスに挑戦する</a>
+          <a class="button button-secondary" href="boss.html">地下へ挑む</a>
         </div>
       </div>
 
       <aside class="hero-panels">
         <article class="glass panel phase-panel">
-          <p class="panel-label">World Phase</p>
-          <h2 id="worldPhaseTitle">星屑の序章</h2>
-          <p id="worldPhaseDescription">静かな世界。今日の一枚が、深層への最初の灯になります。</p>
+          <p class="panel-label">Current Descent</p>
+          <h2 id="currentFloorLabel">地下1階 解放中</h2>
+          <p id="worldPhaseDescription">最初の門番が待っています。毎日の一枚で旅人を深層仕様へ育ててください。</p>
         </article>
         <article class="glass panel small-panel">
           <p class="panel-label">連続訪問</p>
           <p class="metric"><span id="streakDays">0</span>日</p>
-          <p class="panel-note">連続日数で世界が進み、報酬期待も少し上がります。</p>
+          <p class="panel-note">連続日数で世界相が進み、追加報酬の期待も少し高まります。</p>
         </article>
         <article class="glass panel small-panel">
-          <p class="panel-label">次の目標</p>
-          <p class="metric metric-sub" id="nextMilestone">Lv5 到達</p>
-          <p class="panel-note">十分に育ったら、深層の守護者へ挑戦してください。</p>
+          <p class="panel-label">所持 ocoin</p>
+          <p class="metric metric-sub"><span id="ocoinValue">0</span></p>
+          <p class="panel-note">ボス勝利で獲得。ショップでチケットや装備に交換できます。</p>
         </article>
       </aside>
     </section>
@@ -75,7 +76,7 @@
       <div class="section-heading">
         <p class="eyebrow">Daily Ritual</p>
         <h2>今日のカードを引く</h2>
-        <p>1日1回だけ引ける運命カードです。レア度と効果が毎日変わり、稀に戦闘用アイテムも手に入ります。</p>
+        <p>1日1回の運命儀式です。カードチケットや隠し儀式を使えば、追加で引くこともできます。</p>
       </div>
 
       <div class="ritual-layout">
@@ -88,13 +89,13 @@
             <p class="ritual-date" id="todayDate"></p>
           </div>
 
-          <div class="card-vault" id="cardVault">
+          <div class="card-vault">
             <div class="vault-halo"></div>
             <div class="draw-card is-idle" id="drawCard">
               <div class="draw-card-face">
                 <p class="card-rarity" id="drawRarity">FATE</p>
                 <h3 id="drawName">封じられた運命札</h3>
-                <p class="card-copy" id="drawDescription">まだ何も引かれていません。儀式を始めると、今日の一枚が姿を見せます。</p>
+                <p class="card-copy" id="drawDescription">儀式を始めると、今日の一枚がここに姿を見せます。</p>
                 <div class="stat-echo" id="statEcho">
                   <span>HP ???</span>
                   <span>ATK ???</span>
@@ -104,12 +105,15 @@
                 </div>
               </div>
             </div>
-            <button class="button button-primary draw-button" id="drawButton" type="button">今日のカードを引く</button>
+            <div class="draw-actions">
+              <button class="button button-primary" id="drawButton" type="button">今日のカードを引く</button>
+              <button class="button button-secondary" id="ticketButton" type="button">カードチケットを使う</button>
+            </div>
           </div>
 
-          <div class="result-box" id="resultBox" aria-live="polite">
+          <div class="result-box" aria-live="polite">
             <p class="result-tag" id="resultTag">Awaiting Fate</p>
-            <h3 id="resultHeadline">カードを引くと、ここに今日の成長結果が表示されます。</h3>
+            <h3 id="resultHeadline">カードを引くと、ここに成長結果が表示されます。</h3>
             <div class="delta-list" id="resultEffects"></div>
             <p class="result-item" id="resultItem">アイテム報酬はまだありません。</p>
           </div>
@@ -122,16 +126,16 @@
               <li><span class="rarity-dot common"></span>Common: 小幅成長</li>
               <li><span class="rarity-dot rare"></span>Rare: 中幅成長</li>
               <li><span class="rarity-dot epic"></span>Epic: 大幅成長</li>
-              <li><span class="rarity-dot legendary"></span>Legendary: 特別成長と強演出</li>
+              <li><span class="rarity-dot legendary"></span>Legendary: 特別演出と大幅成長</li>
             </ul>
           </div>
           <div class="info-block">
-            <p class="panel-label">進行メモ</p>
-            <p id="worldProgressText">カードを重ねるほど、世界相と旅人の称号が変化します。</p>
+            <p class="panel-label">世界進行</p>
+            <p id="worldProgressText">カード累計とレベルで世界相が進み、地下深層へ近づきます。</p>
           </div>
           <div class="info-block">
-            <p class="panel-label">ボス挑戦の目安</p>
-            <p id="bossAdvice">Lv8以上、HP120以上がひとつの目安です。</p>
+            <p class="panel-label">次のボス</p>
+            <p id="bossAdvice">地下1階の門番に備え、まずはレベルと防具を整えましょう。</p>
           </div>
         </aside>
       </div>
@@ -141,7 +145,7 @@
       <div class="section-heading">
         <p class="eyebrow">Growth Status</p>
         <h2>旅人の育成状況</h2>
-        <p>レベル、能力値、連続訪問、世界進行がひと目で分かるようにまとめています。</p>
+        <p>レベル、能力値、装備、進行度、通貨をひと目で確認できます。</p>
       </div>
 
       <div class="dashboard-grid">
@@ -190,7 +194,7 @@
               <p class="panel-label">Current Stats</p>
               <h3>現在ステータス</h3>
             </div>
-            <p class="subtle">カードの累積効果が反映されます</p>
+            <p class="subtle">装備補正込みの値を表示</p>
           </div>
           <div class="stats-list" id="statsList"></div>
         </article>
@@ -198,12 +202,12 @@
         <article class="glass world-panel">
           <div class="panel-heading-row">
             <div>
-              <p class="panel-label">World Shift</p>
+              <p class="panel-label">Progress</p>
               <h3 id="phaseName">星屑の序章</h3>
             </div>
             <p class="subtle" id="phaseIndex">Phase 1 / 4</p>
           </div>
-          <p id="phaseDetail">カードを重ねるほど世界が開き、最終試練に近づいていきます。</p>
+          <p id="phaseDetail">地下深層へ潜るための世界相と進行度を示します。</p>
           <div class="phase-track"><span id="phaseFill"></span></div>
           <div class="status-mini-grid compact">
             <div>
@@ -214,6 +218,14 @@
               <span>コレクション率</span>
               <strong id="collectionRate">0%</strong>
             </div>
+            <div>
+              <span>装備 武器</span>
+              <strong id="weaponLevel">0</strong>
+            </div>
+            <div>
+              <span>装備 防具</span>
+              <strong id="armorLevel">0</strong>
+            </div>
           </div>
         </article>
       </div>
@@ -223,7 +235,7 @@
       <div class="section-heading">
         <p class="eyebrow">Collection</p>
         <h2>所持カードとアイテム</h2>
-        <p>どの札を引いたか、何が育ち、何を持ち込めるかを一覧で確認できます。</p>
+        <p>どの札を引いたか、何を持ち込み、何を買えるかが分かる収集庫です。</p>
       </div>
 
       <div class="collection-layout">
@@ -233,7 +245,7 @@
               <p class="panel-label">Items</p>
               <h3>所持アイテム</h3>
             </div>
-            <p class="subtle">ボス戦で使用可能</p>
+            <p class="subtle">チケットもここに含まれます</p>
           </div>
           <div class="inventory-list" id="inventoryList"></div>
         </article>
@@ -251,27 +263,42 @@
       </div>
     </section>
 
+    <section class="shell section" id="shop">
+      <div class="section-heading">
+        <p class="eyebrow">Shop</p>
+        <h2>深層商店</h2>
+        <p>ボス撃破で得た `ocoin` を使い、カードチケットや常設装備を購入できます。</p>
+      </div>
+      <div class="shop-header glass">
+        <div>
+          <p class="panel-label">Wallet</p>
+          <h3><span id="shopCoinValue">0</span> ocoin</h3>
+        </div>
+        <p class="subtle">地下1階の撃破報酬は 1000 ocoin です。カードチケットは 1000 ocoin で交換できます。</p>
+      </div>
+      <div class="shop-grid" id="shopGrid"></div>
+    </section>
+
     <section class="shell section" id="about">
       <div class="about-layout">
         <article class="glass profile-panel">
           <p class="panel-label">Profile / Site Concept</p>
-          <h2>個人ホームページを、育成RPGの記録庫として。</h2>
+          <h2>個人サイトを、継続で遊べる地下探索RPGへ。</h2>
           <p>
-            このサイトは、日々の小さなアクセスをひとつの物語に変えるために作られています。
-            プロフィールや制作姿勢も、世界観の中で「旅人の記録」として自然に読める構成にしました。
+            このサイトは、毎日の小さなアクセスをひとつの記録と攻略に変えるために作られています。
+            カード、ショップ、装備、地下階層ボスを通じて、個人ホームページでありながら遊び続ける理由を持たせています。
           </p>
           <p>
-            毎日引くカード、積み上がる能力、集まるアイテム、そして最後に待つボス戦。
-            個人サイトでありながら、遊べる目的と継続の動機がある体験型ページを目指しています。
+            地下1階から始まり、勝てば次の階へ。最後は地下10階のラスボスです。
+            日々の蓄積が、そのまま最後の戦いの準備になります。
           </p>
         </article>
 
         <article class="glass boss-cta-panel">
-          <p class="panel-label">Final Trial</p>
-          <h2>育ったら、深層へ。</h2>
-          <p>
-            現在のレベルと能力値、所持アイテムをそのまま持ち込んで、別ページのボスバトルに挑戦できます。
-            防御や回復の使いどころまで含めて、育成結果が戦況を左右します。
+          <p class="panel-label">Descent</p>
+          <h2>現在の階層へ潜る。</h2>
+          <p id="bossProgressSummary">
+            地下1階が開放中です。旅人を整えたら、深層の門を押し開いてください。
           </p>
           <a class="button button-primary button-wide" href="boss.html">ボスに挑戦する</a>
         </article>
