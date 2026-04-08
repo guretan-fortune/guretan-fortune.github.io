@@ -154,8 +154,8 @@
   const renderStaticInfo = () => {
     nodes.bossName.textContent = boss.name;
     nodes.bossDescription.textContent = boss.description;
-    nodes.bossVisualLabel.textContent = boss.imageLabel;
-    nodes.bossImageNote.textContent = `${boss.imageNote} 差し替え先は boss.html の .boss-visual です。`;
+    nodes.bossVisualLabel.textContent = "ASTRAL DEVOURER";
+    nodes.bossImageNote.textContent = `現在は Content フォルダ内の実画像を表示しています。差し替え先は boss.html の .boss-visual-image です。`;
 
     nodes.playerBattleTitle.textContent = state.player.title;
     nodes.playerBattleLevel.textContent = `Lv${state.player.level} / EXP ${state.player.exp} / 次 ${experienceToNext(state.player.level)}`;
