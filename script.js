@@ -13,6 +13,7 @@
     statEcho: byId("statEcho"),
     drawButton: byId("drawButton"),
     ticketButton: byId("ticketButton"),
+    ticketCountLabel: byId("ticketCountLabel"),
     resultTag: byId("resultTag"),
     resultHeadline: byId("resultHeadline"),
     resultEffects: byId("resultEffects"),
@@ -135,6 +136,12 @@
 
   const state = loadState();
   const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  const hydrateState = () => {
+    const fresh = loadState();
+    Object.keys(state).forEach((key) => delete state[key]);
+    Object.assign(state, fresh);
+  };
 
   const getEquipmentBonuses = () => ({
     hp: state.economy.equipment.armor * 12,
@@ -375,6 +382,7 @@
       : "今日はすでに引きました";
     nodes.ticketButton.disabled = !canTicketDraw();
     nodes.ticketButton.textContent = `カードチケットを使う (${state.items.card_ticket || 0})`;
+    nodes.ticketCountLabel.textContent = `所持カードチケット: ${state.items.card_ticket || 0}枚`;
   };
 
   const renderOverview = () => {
@@ -414,7 +422,7 @@
     nodes.worldProgressText.textContent = `現在の挑戦先は地下${boss.floor}階「${boss.title}」。累計撃破数 ${state.progress.bossClears}。`;
     nodes.bossAdvice.textContent = `次の敵は「${boss.title}」。報酬は ${boss.reward} ocoin。`;
     nodes.nextMilestone.textContent = state.progress.currentFloor >= 10 ? "地下10階を制覇する" : `地下${Math.min(state.progress.currentFloor + 1, 10)}階を解放する`;
-    nodes.ocoinValue.textContent = `${state.economy.ocoin} ocoin`;
+    nodes.ocoinValue.textContent = String(state.economy.ocoin || 0);
     nodes.weaponLevel.textContent = `${state.economy.equipment.weapon}`;
     nodes.armorLevel.textContent = `${state.economy.equipment.armor}`;
     nodes.bossProgressSummary.textContent = state.progress.currentFloor >= 10
@@ -480,6 +488,15 @@
   nodes.drawButton.addEventListener("click", () => drawCard("daily"));
   nodes.ticketButton.addEventListener("click", () => drawCard("ticket"));
   nodes.ritualTrigger.addEventListener("click", handleHiddenTrigger);
+  window.addEventListener("pageshow", () => {
+    hydrateState();
+    renderAll();
+  });
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    hydrateState();
+    renderAll();
+  });
 
   createParticles();
   renderAll();
